@@ -9,8 +9,7 @@ import { SharedModule } from './shared/shared.module';
 import { AnswerService, ChallengeService } from 'micro-lesson-core';
 import { AcrosticChallengeService } from './shared/services/acrostic-challenge.service';
 import { AcrosticAnswerService } from './shared/services/acrostic-answer.service';
-
-
+import { APP_BASE_HREF } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -22,8 +21,8 @@ import { AcrosticAnswerService } from './shared/services/acrostic-answer.service
     HttpClientModule,
     TranslocoRootModule,
     AcrosticGameModule,
-    SharedModule
-  ],
+    SharedModule,
+ ],
   providers: [
     {
       provide:ChallengeService,
@@ -32,7 +31,8 @@ import { AcrosticAnswerService } from './shared/services/acrostic-answer.service
     {
       provide:AnswerService,
       useExisting:AcrosticAnswerService
-    }
+    },
+    {provide: APP_BASE_HREF, useValue: '/'}
   ],
   bootstrap: [AppComponent]
 })

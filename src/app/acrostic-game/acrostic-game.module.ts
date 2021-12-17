@@ -1,12 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
+import { GameBodyComponent } from './components/game-body/game-body.component';
+import { SharedModule } from '../shared/shared.module';
+import { MainLetterComponent } from './components/main-letter/main-letter.component';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    GameBodyComponent,
+    MainLetterComponent
+  ],
   imports: [
-    CommonModule
+    SharedModule
+  ],
+  exports:[
+    GameBodyComponent
   ]
 })
 export class AcrosticGameModule { }

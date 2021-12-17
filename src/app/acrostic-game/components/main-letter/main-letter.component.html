@@ -1,0 +1,15 @@
+<div style="width: 100vh; height: 9.5vh; background-color: rosybrown;transform: translate(-10vh,-10vh);margin-bottom: 3vh;position: relative;" fxLayoutAlign="center center"> 
+ <div *ngFor="let word of beforeFirstHalfQuantity" class="div-container" fxLayoutAlign="center center">
+     <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
+     <input type="text" id="wordForAnswer" class="input" maxlength="1">
+</div>
+<div class="div-container" fxLayoutAlign="center center">
+    <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/container-blue.svg" class="word-container"></mlc-loaded-svg>
+     <ox-text style="position: absolute;" [originalText]="mainLetter" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
+</div>
+<div *ngFor="let word of afterFirstHalfQuantity" class="div-container"  fxLayoutAlign="center center">
+        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
+        <input type="text" id="wordForAnswer"  class="input" maxlength="1">
+
+   </div>
+</div>
