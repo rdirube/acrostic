@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { AnswerService, GameActionsService, MicroLessonMetricsService } from 'micro-lesson-core';
 import { UserAnswer } from 'ox-types';
 import { AcrosticChallengeService } from './acrostic-challenge.service';
@@ -11,6 +11,11 @@ export class AcrosticAnswerService extends AnswerService {
   protected isValidAnswer(answer: UserAnswer): boolean {
     return false;
   }
+
+
+  answerWordComplete = new EventEmitter();
+  answerWordIncomplete = new EventEmitter()
+  checkedAnswer = new EventEmitter();
 
   constructor(private gameActionsService: GameActionsService<any>,
     m: MicroLessonMetricsService<any>,

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import {
   AppInfoOxService,
   ChallengeService,
@@ -9,6 +9,7 @@ import {
 } from 'micro-lesson-core';
 import { ExerciseOx, PreloaderOxService } from 'ox-core';
 import { ExpandableInfo } from 'ox-types';
+import { WordSelectedEmitValues } from '../types/types';
 @Injectable({
   providedIn: 'root'
 })
@@ -16,6 +17,7 @@ import { ExpandableInfo } from 'ox-types';
 
 export class AcrosticChallengeService extends ChallengeService <any,any> {
 
+  wordHasBeenSelected = new EventEmitter<WordSelectedEmitValues>()
 
   protected generateNextChallenge(subLevel: number): ExerciseOx<any> {
     throw new Error('Method not implemented.');

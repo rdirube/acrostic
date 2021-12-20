@@ -1,15 +1,19 @@
-<div style="width: 100vh; height: 9.5vh; background-color: rosybrown;transform: translate(-10vh,-10vh);margin-bottom: 3vh;position: relative;" fxLayoutAlign="center center"> 
+<div style="width: 120vh; height: 9.5vh;margin-bottom: 1vh;position: relative;" fxLayoutAlign="center center">
+<div div *ngFor="let space of spaceToAddLeft" class="div-container" fxLayoutAlign="center center">
+</div> 
  <div *ngFor="let word of beforeFirstHalfQuantity" class="div-container" fxLayoutAlign="center center">
-     <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
-     <input type="text" id="wordForAnswer" class="input" maxlength="1">
+     <mlc-loaded-svg #squareImage path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
+     <input type="text" (click)="wordSelection()" (input)="textComplete()" id="wordForAnswer" #wordInput class="input" maxlength="1">
 </div>
 <div class="div-container" fxLayoutAlign="center center">
-    <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/container-blue.svg" class="word-container"></mlc-loaded-svg>
-     <ox-text style="position: absolute;" [originalText]="mainLetter" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
+    <mlc-loaded-svg #squareImage  path="mini-lessons/executive-functions/acrostic/svg/container-blue.svg" class="word-container"></mlc-loaded-svg>
+     <ox-text style="position: absolute;" [originalText]="mainWord" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
 </div>
 <div *ngFor="let word of afterFirstHalfQuantity" class="div-container"  fxLayoutAlign="center center">
-        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
-        <input type="text" id="wordForAnswer"  class="input" maxlength="1">
+        <mlc-loaded-svg #squareImage  path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
+        <input ngModel (click)="wordSelection()" (input)="textComplete()" type="text" id="wordForAnswer" #wordInput class="input" maxlength="1">
+</div>
+<div div *ngFor="let space of spaceToAddRight" class="div-container" fxLayoutAlign="center center">
+</div> 
 
-   </div>
 </div>
