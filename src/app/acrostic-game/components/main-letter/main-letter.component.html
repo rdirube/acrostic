@@ -1,17 +1,21 @@
-<div style="width: 120vh; height: 9.5vh;margin-bottom: 1vh;position: relative;" fxLayoutAlign="center center">
+<div [ngStyle]="{'filter': containerOn ? 'grayscale(0)' : 'grayscale(2)'}" [ngClass]="answerLargerThan6 ? 'word-container-small': 'word-container'" fxLayoutAlign="center center">
 <div div *ngFor="let space of spaceToAddLeft" class="div-container" fxLayoutAlign="center center">
 </div> 
- <div *ngFor="let word of beforeFirstHalfQuantity" class="div-container" fxLayoutAlign="center center">
-     <mlc-loaded-svg #squareImage path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
-     <input type="text" (click)="wordSelection()" (input)="textComplete()" id="wordForAnswer" #wordInput class="input" maxlength="1">
+<div class="div-container">
+    <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/indicator.svg" style="width:10vh;"></mlc-loaded-svg>
+    <ox-text [originalText]="answerWord.id + ''" fontSize="4.5vh" color="white" font="dinnRegular" style="position: absolute; transform: translateY(2.5vh);"></ox-text>
+</div>
+ <div *ngFor="let word of beforeFirstHalfQuantity; let i = index" class="div-container" fxLayoutAlign="center center">
+     <mlc-loaded-svg #squareImage0 [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'" path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg"></mlc-loaded-svg>
+     <input type="text" (focus)="focusInput(i)"  (input)="textComplete()" id="wordForAnswer" #wordInput class="input" maxlength="1">
 </div>
 <div class="div-container" fxLayoutAlign="center center">
-    <mlc-loaded-svg #squareImage  path="mini-lessons/executive-functions/acrostic/svg/container-blue.svg" class="word-container"></mlc-loaded-svg>
-     <ox-text style="position: absolute;" [originalText]="mainWord" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
+    <mlc-loaded-svg #squareImage1  path="mini-lessons/executive-functions/acrostic/svg/container-blue.svg" [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'"></mlc-loaded-svg>
+     <ox-text style="position: absolute;" [originalText]="mainLetter" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
 </div>
-<div *ngFor="let word of afterFirstHalfQuantity" class="div-container"  fxLayoutAlign="center center">
-        <mlc-loaded-svg #squareImage  path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" class="word-container"></mlc-loaded-svg> 
-        <input ngModel (click)="wordSelection()" (input)="textComplete()" type="text" id="wordForAnswer" #wordInput class="input" maxlength="1">
+<div *ngFor="let word of afterFirstHalfQuantity; let i = index"  class="div-container"  fxLayoutAlign="center center">
+        <mlc-loaded-svg #squareImage2 path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'"></mlc-loaded-svg> 
+        <input ngModel (focus)="focusInput(i + beforeFirstHalfQuantity.length)" (input)="textComplete()" type="text" id="wordForAnswer" #wordInput class="input" maxlength="1">
 </div>
 <div div *ngFor="let space of spaceToAddRight" class="div-container" fxLayoutAlign="center center">
 </div> 

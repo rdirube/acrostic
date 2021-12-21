@@ -58,6 +58,7 @@ export class AppComponent extends BaseMicroLessonApp {
     });
     preloader.addResourcesToLoad(this.getGameResourcesToLoad());
     preloader.loadAll().subscribe( z => this.loaded = true);
+    this.sound.setSoundOn(true);
   }
 
 
@@ -72,7 +73,7 @@ export class AppComponent extends BaseMicroLessonApp {
     return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/elements/' + x, ResourceType.Svg,
       [ScreenTypeOx.Game], true)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/svg/' + x, ResourceType.Svg,
         [ScreenTypeOx.Game], true)))
-      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false))
+      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, true))
       .concat(getResourceArrayFromUrlList(['mini-lessons/executive-functions/buttons/pista.svg',
         'mini-lessons/executive-functions/buttons/menu.svg'], ResourceType.Svg, true));
   }

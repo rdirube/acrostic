@@ -1,26 +1,61 @@
-.word-container {
-    width: 9.5vh;
+.letter-container {
+    width: 10vh;
     object-fit: contain;
      position: absolute;
 }
 
 
+.letter-container-small {
+    width: 8.5vh;
+    object-fit: contain;
+     position: absolute;
+}
+
 .input {
-    width: 43%;
-    height: 50%;
+    width: 79%;
+    height: 71%;
     z-index: 10;
     border:0;
-    transform: translateX(1vh);
     outline: 0;
     font-size: 4.5vh;
+    text-align: center;
+    caret-color: transparent;
 }
+
+
 
 
 .div-container {
     position: relative;
     height: 100%;
-    width: 9.5vh;
-    margin-right: 0.6vh;
+    width: 8.5vh;
+    margin-right: 2.5vh;
     display: flex;
     justify-content: center;
+}
+
+
+.div-container-no-selected{
+   filter:grayscale(1);
+}
+
+
+.div-wrong-animation {
+    width:70%; 
+    height: 70%;
+     position: absolute; 
+}
+
+
+.word-container {
+    width: 130vh;
+     height:9vh; 
+     position: relative;
+     margin-bottom: 1.5vh;
+}
+
+.word-container-small {
+    width: 120vh;
+     height:8.5vh; 
+     position: relative;
 }

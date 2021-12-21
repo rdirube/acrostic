@@ -1,11 +1,11 @@
 import { CompileTemplateMetadata, isLoweredSymbol } from '@angular/compiler';
-import { Component, ElementRef, Input, OnInit, ViewChild, AfterViewInit, ViewChildren, QueryList, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild, AfterViewInit, ViewChildren, QueryList, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { LoadedSvgComponent, SubscriberOxDirective } from 'micro-lesson-components';
 import { WordAnswer, WordPosition, WordSelectedEmitValues } from 'src/app/shared/types/types';
-import { AnswerService } from 'micro-lesson-core';
+import { AnswerService, SoundOxService } from 'micro-lesson-core';
 import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.service';
 import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-challenge.service';
-import { duplicateWithJSON, equalArrays, isEven } from 'ox-types';
+import { duplicateWithJSON, equalArrays, isEven, ScreenTypeOx } from 'ox-types';
 import anime from 'animejs';
 
 
@@ -18,39 +18,54 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   @ViewChildren('wordInput')
   wordInput!: QueryList<ElementRef>;
-  
-  @ViewChildren('squareImage')
-  squareImage!: QueryList<LoadedSvgComponent>;
 
-  @Input() mainWord!: string
+  @ViewChildren('squareImage0')
+  squareImage0!: QueryList<LoadedSvgComponent>;
+
+  @ViewChildren('squareImage1')
+  squareImage1!: QueryList<LoadedSvgComponent>;
+
+  @ViewChildren('squareImage2')
+  squareImage2!: QueryList<LoadedSvgComponent>;
+
+  @Output() erraseAllSelectedInput = new EventEmitter()
+  @Input() exerciseWordArray!:string[];
+  @Input() mainLetter!: string
   @Input() answerWord!: WordAnswer;
   public answerWordArray!: string[];
   public beforeFirstHalfQuantity!: string[];
   public afterFirstHalfQuantity!: string[];
   public spaceToAddLeft!: number[];
   public spaceToAddRight!: number[];
-  public wordInputArray!:any[];
-  public isCorrect!:boolean;
+  public wordInputArray!: any[];
+  public isCorrect!: boolean;
+  public containerOn!:boolean;
+  public answerLargerThan6!:boolean; 
+  // 
 
-  constructor(private answerService:AcrosticAnswerService, private cdr:ChangeDetectorRef, private challengeService:AcrosticChallengeService) {
+  constructor(private answerService: AcrosticAnswerService, private cdr: ChangeDetectorRef, private challengeService: AcrosticChallengeService
+    , private soundService: SoundOxService) {
     super();
     // this.addSubscription(this.wordInput.changes, x => {
     //   if(this.wordInputArray.every((wordView => wordView.nativeElement.nodeValue !== null))) {
     //      this.answerService.answerWordComplete.emit();
     //   }})
+
+
     this.addSubscription(this.answerService.checkedAnswer, x => {
       this.answerCorrection()
     })
+    this.containerOn = false;
 
   }
 
-  ngOnInit():void 
-  {
-      this.answerWordArray = this.answerWord.word.split('');
-      this.beforeFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainWord, true);
-      this.afterFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainWord, false);
-      this.spaceToAddLeft = Array.from({ length: 5 - this.beforeFirstHalfQuantity.length }, (v, i) => i);
-      this.spaceToAddRight = Array.from({ length: 5 - this.afterFirstHalfQuantity.length }, (v, i) => i);
+  ngOnInit(): void {
+    this.answerWordArray = this.answerWord.word.split('');
+    this.beforeFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainLetter, true);
+    this.afterFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainLetter, false);
+    this.spaceToAddLeft = Array.from({ length: 5 - this.beforeFirstHalfQuantity.length }, (v, i) => i);
+    this.spaceToAddRight = Array.from({ length: 5 - this.afterFirstHalfQuantity.length }, (v, i) => i);
+    this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
   }
 
 
@@ -107,65 +122,89 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
 
- 
+
   answerCorrection() {
-  if(this.answerWord.isComplete && !this.answerWord.isCorrect){
-    const firstHalfInputs = this.wordInputArray.splice(0,this.beforeFirstHalfQuantity.length).map(z => z.nativeElement.value);
-    const secondHalfInputs = this.wordInputArray.splice(0,this.afterFirstHalfQuantity.length).map(z => z.nativeElement.value);
-    const concatAnswer:string[] = firstHalfInputs.concat(this.mainWord).concat(secondHalfInputs);
-    if(equalArrays(concatAnswer, this.answerWordArray)) {
-      this.correctAnswerAnimation();
-      this.answerService.answerWordIncomplete.emit();
+    if (this.answerWord.isComplete && !this.answerWord.isCorrect) {
+      const wordInputArrayForAnswer = duplicateWithJSON(this.wordInputArray.map(z => z.nativeElement.value));
+      console.log(wordInputArrayForAnswer);
+      const firstHalfInputs = wordInputArrayForAnswer.splice(0, this.beforeFirstHalfQuantity.length);
+      const secondHalfInputs = wordInputArrayForAnswer.splice(0, this.afterFirstHalfQuantity.length);
+      const concatAnswer: string[] = firstHalfInputs.concat(this.mainLetter).concat(secondHalfInputs);
+      if (equalArrays(concatAnswer, this.answerWordArray)) {
+        this.correctAnswerAnimation();
+        this.answerWord.isCorrect = true;
+        this.answerWord.isComplete = false;
+        this.answerService.answerWordIncomplete.emit();
+      } else {
+        this.wrongAnswerAnimation();
+      }}}
+
+
+
+
+  public textComplete() {
+    if (this.wordInputArray.every(wordView => wordView.nativeElement.value !== '')) {
+      this.answerWord.isComplete = true;
     } else {
-    this.wrongAnswerAnimetion();
+      this.answerWord.isComplete = false;
     }
+    this.answerService.answerWordComplete.emit();
+
   }
+
+
+
+  public focusInput(i:number) {
+  if(!this.answerWord.isCorrect) {
+    this.erraseAllSelectedInput.emit();
+    this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.definition });
+    this.wordInputArray[i].nativeElement.style.backgroundColor = '#FAFA33';
+    this.containerOn = true;
+  } }
+  
+
+  correctAnswerAnimation() {
+    this.soundService.playSoundEffect('sounds/rightAnswer.mp3', ScreenTypeOx.Game);
+    anime({
+      targets: this.wordInput.map(input => input.nativeElement),
+      delay: anime.stagger(150, { start: 300 }),
+      backgroundColor: '#0FFF50',
+      keyframes: [{
+        scale: '1.08',
+        translateY: '-1.5vh',
+        easing: 'easeOutExpo'
+      }, {
+        scale: '1',
+        translateY: '0',
+        easing: 'easeOutExpo'
+      }],
+    })
+
   }
 
- 
 
- public textComplete() {
-    if(this.wordInputArray.every(wordView => wordView.nativeElement.value !== '')) {
-         this.answerService.answerWordComplete.emit();
-         this.answerWord.isComplete = true;
-   } else {
-    this.answerService.answerWordIncomplete.emit();}
+
+
+  wrongAnswerAnimation() {
+    this.soundService.playSoundEffect('sounds/wrongAnswer.mp3', ScreenTypeOx.Game)
+    const rotate = Array.from(Array(8).keys()).map((z, i) => {
+      return { value: isEven(i) ? 2 : -2, duration: 50 };
+    }).concat([{ value: 0, duration: 50 }]);
+    anime({
+      targets: [this.squareImage0.map(z => z.elementRef.nativeElement), this.squareImage1.map(z => z.elementRef.nativeElement), this.squareImage2.map(z => z.elementRef.nativeElement)],
+      rotate,
+    }),
+      anime({
+        targets: this.wordInput.map(input => input.nativeElement),
+        duration: 1100,
+        keyframes: [{
+          backgroundColor: '#FF2D00'
+        }, {
+          backgroundColor: '#FFFFFF'
+        }],
+        easing: 'linear',
+      })
   }
-   
-
-  public wordSelection() {
-    this.challengeService.wordHasBeenSelected.emit({id:this.answerWord.id, definition: this.answerWord.definition})
-  }
- 
-
- 
- correctAnswerAnimation() {
-   anime({
-     targets:[this.squareImage.map(z => z.elementRef.nativeElement), this.wordInput.map(z=> z.nativeElement)],
-     delay:anime.stagger(120,{start:300}),
-     backgroundColor: '#0FFF50',
-     keyframes:[{
-       translateY:'-2vh',
-       easing:'easeOutExpo'
-     },{
-       translateY:'0',
-       easing:'easeOutExpo'
-     }],
-   })
- }
-
-
-
- wrongAnswerAnimetion() {
-  const rotate = Array.from(Array(8).keys()).map((z, i) => {
-    return { value: isEven(i) ? 2 : -2, duration: 50 };
-  }).concat([{ value: 0, duration: 50 }]);
-   anime({
-    targets:this.squareImage.map(z => z.elementRef.nativeElement),
-    rotate,
-    backgroundColor:'red'
-   })
- }
 
 
 }

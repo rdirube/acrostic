@@ -5,7 +5,7 @@
         class='button-menu'style="width: 13vh;"
         svgPath="mini-lessons/executive-functions/buttons/menu.svg">
       </mlc-to-in-game-menu-button>
-      <div fxLayoutAlign="center end" style="transform: translateY(7vh);">
+      <div fxLayoutAlign="center end" style="transform: translateY(4vh);">
         <div fxLayoutAlign="center center">
         <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/indicator.svg" style="height:17vh;width: 12vh; transform: translateX(2.5vh);"></mlc-loaded-svg>
         <ox-text style="position: absolute; transform: translateX(2.5vh);" [originalText]="currentWordId" fontSize="7.5vh" color="white" font="dinnRegular"></ox-text>
@@ -23,8 +23,8 @@
         <mlc-loaded-svg fxFlex="grow" class="myAbsolute" forceViewBoxTo="''"
         path="mini-lessons/executive-functions/acrostic/svg/background.svg">
         </mlc-loaded-svg>
-        <div fxLayout="column" fxLayoutAlign="center center" class="myAbsolute">
-         <app-main-letter *ngFor="let word of testWordArray; let i = index" [mainWord]="word" [answerWord]="answerWordTest[i]"></app-main-letter>
+        <div fxLayout="column" fxLayoutAlign="center center" style="transform: translateY(1.5vh);" class="myAbsolute">
+         <app-main-letter (erraseAllSelectedInput)="erraseAllSelectedInput()" #mainLetter *ngFor="let letter of exerciseWordArray; let i = index" [exerciseWordArray]="exerciseWordArray" [mainLetter]="letter" [answerWord]="answerWordTest[i]"></app-main-letter>
         </div>
     </div>
   <div class="elements-container" fxLayoutAlign="space-between end">
