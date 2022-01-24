@@ -14,8 +14,8 @@ export class AcrosticAnswerService extends AnswerService {
 
 
   answerWordComplete = new EventEmitter();
-  answerWordIncomplete = new EventEmitter()
-  checkedAnswer = new EventEmitter();
+  answerWordIncomplete = new EventEmitter();
+  answerForCorrection = new EventEmitter();
 
   constructor(private gameActionsService: GameActionsService<any>,
     m: MicroLessonMetricsService<any>,

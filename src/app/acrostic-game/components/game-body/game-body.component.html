@@ -1,39 +1,49 @@
 <div fxFlex="grow" fxLayoutAlign="center center" style="position: relative; background: lightsalmon">
-    <div class="myAbsolute full-width" style="height: 13vh; z-index: 10" fxLayoutAlign="space-between">
-      <mlc-to-in-game-menu-button
-        [forceNoAnimations]="true"
-        class='button-menu'style="width: 13vh;"
-        svgPath="mini-lessons/executive-functions/buttons/menu.svg">
-      </mlc-to-in-game-menu-button>
-      <div fxLayoutAlign="center end" style="transform: translateY(4vh);">
-        <div fxLayoutAlign="center center">
-        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/indicator.svg" style="height:17vh;width: 12vh; transform: translateX(2.5vh);"></mlc-loaded-svg>
-        <ox-text style="position: absolute; transform: translateX(2.5vh);" [originalText]="currentWordId" fontSize="7.5vh" color="white" font="dinnRegular"></ox-text>
+  <div class="myAbsolute full-width" style="height: 13vh; z-index: 10" fxLayoutAlign="space-between">
+    <mlc-to-in-game-menu-button [forceNoAnimations]="true" class='button-menu'
+      style="width: 13vh; transform: translateX(-13vh);" svgPath="mini-lessons/executive-functions/buttons/menu.svg">
+    </mlc-to-in-game-menu-button>
+    <div fxLayoutAlign="center end" style="transform: translateY(4vh);">
+      <div fxLayoutAlign="center center" class="indicator-container" style="transform: translateY(-18vh);">
+        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/indicator.svg"
+          style="height:17vh;width: 12vh; transform: translateX(2.5vh);"></mlc-loaded-svg>
+        <ox-text style="position: absolute; transform: translateX(2.5vh);" [originalText]="currentWordId"
+          fontSize="7.5vh" color="white" font="dinnRegular"></ox-text>
       </div>
-      <div fxLayoutAlign="center center">
-        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/header-background-18.svg" style="width: 90vh;"></mlc-loaded-svg>
-        <ox-text style="position: absolute;" [originalText]="currentWordDefinition" fontSize="3vh" color="black" font="dinnRegular"></ox-text>
+      <div fxLayoutAlign="center center" class="explanation-container" style="transform: translateY(-18vh);">
+        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/header-background-18.svg"
+          style="width: 90vh;"></mlc-loaded-svg>
+        <ox-text style="position: absolute;width:80vh" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
+          font="dinnRegular"></ox-text>
       </div>
-      </div>
-      <mlc-hint-button class='button-hint' style="width: 13vh;" svgPath="mini-lessons/executive-functions/buttons/pista.svg">
-      </mlc-hint-button>
     </div>
+    <mlc-hint-button class="button-hint" style="width: 13vh;"
+      svgPath="mini-lessons/executive-functions/buttons/pista.svg">
+    </mlc-hint-button>
+  </div>
   <div fxFlex="grow" fxFlexFill class="myAbsolute">
-    <div fxLayoutAlign="center center"  style="position: relative;min-height: 100%;min-width: 100%;">
-        <mlc-loaded-svg fxFlex="grow" class="myAbsolute" forceViewBoxTo="''"
+    <div fxLayoutAlign="center center" style="position: relative;min-height: 100%;min-width: 100%;">
+      <mlc-loaded-svg fxFlex="grow" class="myAbsolute" forceViewBoxTo="''"
         path="mini-lessons/executive-functions/acrostic/svg/background.svg">
-        </mlc-loaded-svg>
-        <div fxLayout="column" fxLayoutAlign="center center" style="transform: translateY(1.5vh);" class="myAbsolute">
-         <app-main-letter (erraseAllSelectedInput)="erraseAllSelectedInput()" #mainLetter *ngFor="let letter of exerciseWordArray; let i = index" [exerciseWordArray]="exerciseWordArray" [mainLetter]="letter" [answerWord]="answerWordTest[i]"></app-main-letter>
-        </div>
+      </mlc-loaded-svg>
+      <div fxLayout="column" fxLayoutAlign="center center" style="transform: translateY(1.5vh);" class="myAbsolute">
+        <app-main-letter (erraseAllSelectedInput)="erraseAllSelectedInput()" #mainLetter style="transform: scale(0);"
+          *ngFor="let letter of exerciseWordArray; let i = index" [exerciseWordArray]="exerciseWordArray"
+          [mainLetter]="letter" [answerWord]="horizontalWords[i]"></app-main-letter>
+      </div>
     </div>
-  <div class="elements-container" fxLayoutAlign="space-between end">
-  <mlc-loaded-svg path="mini-lessons/executive-functions/elements/surrender.svg" class="game-element"></mlc-loaded-svg>
-  <mlc-loaded-svg path="mini-lessons/executive-functions/elements/check.svg" [ngClass]="wordIsComplete ? 'game-element': 'disable-element'" 
-    (click)="tryAnswer()" ></mlc-loaded-svg>
-  <mlc-loaded-svg path="mini-lessons/executive-functions/elements/next-memotest.svg" class="game-element"></mlc-loaded-svg>
+    <div class="elements-container" fxLayoutAlign="space-between end">
+      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/surrender.svg" class="game-element">
+      </mlc-loaded-svg>
+      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/check.svg" 
+        [ngClass]="wordIsComplete ? 'game-element': 'disable-element'" (click)="tryAnswer()"></mlc-loaded-svg>
+      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/next-memotest.svg" class="game-element">
+      </mlc-loaded-svg>
+    </div>
   </div>
-  </div>
-  </div>
-  <!-- <app-count-down *ngIf="showCountDown" (started)="startGame()" class="myAbsolute" fxFlex="grow" style="z-index: 123">
-  </app-count-down> -->
+</div>
+<!-- <ox-comp-count-down *ngIf="countDownImageInfo"
+  (timeUpdated)="onCountDownTimeUpdated()"
+  [skipButtonInfo]="countDownImageInfo"
+  (started)="startGame()"
+  class="myAbsolute" fxFlex="grow" style="z-index: 123"></ox-comp-count-down> -->
