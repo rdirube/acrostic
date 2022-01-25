@@ -6,13 +6,13 @@
     <div fxLayoutAlign="center end" style="transform: translateY(4vh);">
       <div fxLayoutAlign="center center" class="indicator-container" style="transform: translateY(-18vh);">
         <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/indicator.svg"
-          style="height:17vh;width: 12vh; transform: translateX(2.5vh);"></mlc-loaded-svg>
-        <ox-text style="position: absolute; transform: translateX(2.5vh);" [originalText]="currentWordId"
+          style="height:14.8vh;width: 12vh; transform: translate(1vh,-1.15vh);"></mlc-loaded-svg>
+        <ox-text style="position: absolute; transform: translate(1vh,-0.5vh)" [originalText]="currentWordId"
           fontSize="7.5vh" color="white" font="dinnRegular"></ox-text>
       </div>
       <div fxLayoutAlign="center center" class="explanation-container" style="transform: translateY(-18vh);">
         <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/header-background-18.svg"
-          style="width: 90vh;"></mlc-loaded-svg>
+          style="width: 89vh;"></mlc-loaded-svg>
         <ox-text style="position: absolute;width:80vh" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
           font="dinnRegular"></ox-text>
       </div>
@@ -29,7 +29,7 @@
       <div fxLayout="column" fxLayoutAlign="center center" style="transform: translateY(1.5vh);" class="myAbsolute">
         <app-main-letter (erraseAllSelectedInput)="erraseAllSelectedInput()" #mainLetter style="transform: scale(0);"
           *ngFor="let letter of exerciseWordArray; let i = index" [exerciseWordArray]="exerciseWordArray"
-          [mainLetter]="letter" [answerWord]="horizontalWords[i]"></app-main-letter>
+          [mainLetter]="letter" [answerWord]="horizontalWords[i]" ></app-main-letter>
       </div>
     </div>
     <div class="elements-container" fxLayoutAlign="space-between end">

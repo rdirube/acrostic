@@ -43,6 +43,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public answerLargerThan6!:boolean; 
   // 
 
+
+
   constructor(private answerService: AcrosticAnswerService, private cdr: ChangeDetectorRef, private challengeService: AcrosticChallengeService
     , private soundService: SoundOxService, public gameActions:GameActionsService<any>,public elementRef:ElementRef) {
     super();
@@ -53,8 +55,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       }
     })
     this.containerOn = false;
-
   }
+
+
 
   ngOnInit(): void {
     this.answerWordArray = this.answerWord.word.text.split('');
@@ -151,21 +154,25 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   public textComplete(i:number) {
     this.focusToTheRight(i);
+  }
+ 
+
+  wordIsCompleteCheck() {
     if (this.wordInputArray.every(wordView => wordView.nativeElement.value !== '')) {
       this.answerWord.isComplete = true;
     } else {
       this.answerWord.isComplete = false;
     }
-    this.answerService.answerWordComplete.emit();
   }
 
 
   public focusToTheRight(i:number) {
-    if(this.wordInputArray[i + this.beforeFirstHalfQuantity.length].nativeElement.style.backgroundColor !== '#FAFA33') {
+    if(this.wordInputArray.length - 1 > i) {
       this.focusInput(i+1);
     } else {
       this.focusInput(i);
     }
+    
   }
 
 
@@ -175,9 +182,24 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text });
     this.wordInputArray[i].nativeElement.style.backgroundColor = '#FAFA33';
     this.containerOn = true;
-  } }
+    this.wordInputArray[i].nativeElement.focus();
+    this.wordIsCompleteCheck();
+    this.answerService.answerWordComplete.emit(i);
+  } 
+}
   
 
+public overwriteLetter(event:any,i:number): void {
+  if((event.keyCode >= 65 && event.keyCode <= 122 && this.wordInputArray[i].nativeElement.value !== '')
+  ) {
+    this.wordInputArray[i].nativeElement.value = event.key;
+    this.focusToTheRight(i);
+  }
+  if(event.keyCode === 8 || event.keyCode === 46) {
+    this.wordInputArray[i].nativeElement.value = '';
+  }
+
+  }
 
 
   correctAnswerAnimation() {

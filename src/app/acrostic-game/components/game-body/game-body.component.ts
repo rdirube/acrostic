@@ -37,7 +37,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   //   id: 4,
   //   word: 'enchufe', isComplete: false,  isCorrect: false, definition: 'Pieza de material aislante con dos o tres salientes metálicos que sirve para conectar un aparato a la red eléctrica'
   // }, { id: 5, word: 'melon', isComplete: false,  isCorrect: false, definition: 'Planta de tallos trepadores y rastreros, hojas lobuladas, flores solitarias, de color amarillo y fruto grande y comestible' }, { id: 6, word: 'pared', isComplete: false,  isCorrect: false, definition: 'Construcción de superficie continua, levantada perpendicular al suelo, con las dimensiones adecuadas para cerrar o dividir un espacio, sostener una techumbre o proteger una zona' }, { id: 7, word: 'morado', isComplete: false,  isCorrect: false, definition: 'Color violeta oscuro, como el del jugo de las moras o como la piel de las berenjenas' }, { id: 8, word: 'morado', isComplete: false,  isCorrect: false, definition: 'Color violeta oscuro, como el del jugo de las moras o como la piel de las berenjenas' }]; 
-  public wordIsComplete: boolean = false;
+  wordIsComplete: boolean = false;
   public currentWordId!: string;
   public currentWordDefinition!: string;
   public inputInteractable!: boolean;
@@ -55,7 +55,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
       private answerService: AcrosticAnswerService) {
       super()
       this.addSubscription(this.answerService.answerWordComplete, x => {
-        if (this.mainLetterComponentArray.find(comp => comp.answerWord.isComplete)) {
+        if (this.mainLetterComponentArray[x].answerWord.isComplete && !this.mainLetterComponentArray[x].answerWord.isCorrect) {
           this.wordIsComplete = true;
         } else {
           this.wordIsComplete = false;
@@ -66,7 +66,12 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
       this.currentWordDefinition = d.definition;
     })
     this.addSubscription(this.gameActions.checkedAnswer, z => {
-
+     const correct = z.correctness === 'correct';
+     if(correct) {
+      this.wordIsComplete = false;
+     } else {
+       this.wordIsComplete = true;
+     }
     })
 
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
@@ -77,10 +82,8 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         this.exerciseWord = exercise.exerciseData.verticalWord.text;
         this.exerciseWordArray =  this.exerciseWord.split('');
         this.horizontalWordGenerator();
-        console.log(this.horizontalWords);
         this.currentWordId = 1 + '';
         this.currentWordDefinition = this.horizontalWords[0].description.text;
-
         this.startGame();
         timer(500).subscribe(z => {
           this.mainLetterComponentArray = this.mainLetterComponent.toArray();
@@ -94,14 +97,13 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
 
 
-  ngOnInit(): void {
-    
+  ngOnInit(): void { 
   }
 
 
   ngAfterViewInit(): void {
-    
   }
+
 
 
   startGame() {
