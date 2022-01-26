@@ -98,6 +98,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
 
   ngOnInit(): void { 
+    console.log("body-component")
   }
 
 
@@ -172,7 +173,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
   public erraseAllSelectedInput() {
     const incompleteAnswers = this.mainLetterComponent.filter(comp => !comp.answerWord.isCorrect);
-    incompleteAnswers.forEach(ans => ans.wordInputArray.forEach(input => input.nativeElement.style.backgroundColor = '#FFFFFF'));
+    incompleteAnswers.forEach(ans => ans.wordOxTextArray.forEach(oxText => oxText.element.nativeElement.style.backgroundColor = '#FFFFFF'));
     incompleteAnswers.forEach(ans => ans.containerOn = false);
   }
 
