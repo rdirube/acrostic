@@ -11,7 +11,7 @@
      position: absolute;
 }
 
-.input {
+.ox-text {
     width: 79%;
     height: 71%;
     z-index: 10;
@@ -20,12 +20,12 @@
     font-size: 4.5vh;
     text-align: center;
     caret-color: transparent;
-    transform: translateX(-0.5vh)
+    transform: translateX(-0.65vh)
 }
 
 
-.input-small {
-    @extend .input;
+.ox-text-small {
+    @extend .ox-text;
     width: 73%;
     height: 63%;
 

@@ -59,7 +59,8 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
           this.wordIsComplete = true;
         } else {
           this.wordIsComplete = false;
-        }
+        } 
+        console.log(this.wordIsComplete);
       })
     this.addSubscription(this.challengeService.wordHasBeenSelected, d => {
       this.currentWordId = d.id + '';
