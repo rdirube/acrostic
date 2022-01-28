@@ -8,7 +8,7 @@ import {
 } from 'micro-lesson-core';
 import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-challenge.service';
 import { ExerciseOx } from 'ox-core';
-import { ExerciseData, MultipleChoiceSchemaData, OptionShowable, OxImageInfo, ScreenTypeOx, Showable } from 'ox-types';
+import { anyElement, ExerciseData, MultipleChoiceSchemaData, OptionShowable, OxImageInfo, ScreenTypeOx, Showable } from 'ox-types';
 import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.service';
 import { AcrosticExercise, HorizontalWord, WordAnswer } from 'src/app/shared/types/types';
 import { SubscriberOxDirective } from 'micro-lesson-components';
@@ -60,7 +60,6 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         } else {
           this.wordIsComplete = false;
         } 
-        console.log(this.wordIsComplete);
       })
     this.addSubscription(this.challengeService.wordHasBeenSelected, d => {
       this.currentWordId = d.id + '';
@@ -88,7 +87,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         this.startGame();
         timer(500).subscribe(z => {
           this.mainLetterComponentArray = this.mainLetterComponent.toArray();
-          this.mainLetterComponentArray[0].focusInput(0);
+          this.mainLetterComponentArray[0].updateFocus(0);
         })
         // this.addMetric();
         // this.hintService.checkHintAvailable();
@@ -189,6 +188,22 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
        description: this.exercise.horizontalWord.description[i]
      })
   })
+}
+
+
+
+ public hintGenerator() {
+   const selectedWord = this.mainLetterComponent.find(word => word.containerOn);
+   const emptyIndex = selectedWord?.answerWordArray.map((letter, i) => i).filter(index => selectedWord.wordForAnswer[index] === '');
+   const indexToAdd = anyElement(emptyIndex as any);
+   if(indexToAdd as number <= (selectedWord as any).firstHalfAnswer.length) {
+    (selectedWord as any).firstHalfAnswer[indexToAdd as number].txt = selectedWord?.answerWordArray[indexToAdd as number];
+    (selectedWord as any).firstHalfAnswer[indexToAdd as number].isHint = true;
+   } else {
+    (selectedWord as any).secondHalfAnswer[indexToAdd as number - (selectedWord as any).firstHalfAnswer.length - 1].txt = selectedWord?.answerWordArray[indexToAdd as number];
+    (selectedWord as any).secondHalfAnswer[indexToAdd as number - (selectedWord as any).firstHalfAnswer.length - 1].isHint = true;
+   }
+   selectedWord?.hintAppearence();
 }
 
 

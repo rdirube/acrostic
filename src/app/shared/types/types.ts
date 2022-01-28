@@ -21,6 +21,10 @@ export interface WordAnswer {
       definition:string
   }
 
+  export interface WordText {
+    txt:string,
+    isHint:boolean
+  }
 
 
   export interface AcrosticNivelation {

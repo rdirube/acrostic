@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="elements-container" fxLayoutAlign="space-between end">
-      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/surrender.svg" class="game-element">
+      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/surrender.svg" (click)="hintGenerator()" class="game-element">
       </mlc-loaded-svg>
       <mlc-loaded-svg path="mini-lessons/executive-functions/elements/check.svg" 
         [ngClass]="wordIsComplete ? 'game-element': 'disable-element'" (click)="tryAnswer()"></mlc-loaded-svg>
