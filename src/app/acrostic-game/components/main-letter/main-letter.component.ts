@@ -9,7 +9,6 @@ import { duplicateWithJSON, equalArrays, isEven, ScreenTypeOx } from 'ox-types';
 import anime from 'animejs';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { timer } from 'rxjs';
-import { listenOrNotOperator } from '@ngneat/transloco/lib/shared';
 
 @Component({
   selector: 'app-main-letter',
@@ -33,10 +32,24 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   @ViewChildren('squareImage2')
   squareImage2!: QueryList<LoadedSvgComponent>;
 
-  @Output() erraseAllSelectedInput = new EventEmitter()
+  
+
+  @Output() erraseAllSelectedInput = new EventEmitter();
+  @Output() componentInitEmit = new EventEmitter();
   @Input() exerciseWordArray!: string[];
   @Input() mainLetter!: string
   @Input() answerWord!: WordAnswer;
+  @Input() set currentId (value:string) {
+    this.currentIdParsed = parseFloat(value);
+    if(this.answerWord !== undefined &&  this.currentIdParsed !== this.answerWord.id ) {
+      this.containerOn = false;
+      this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF");
+    }
+   }
+
+  @Input() componentInit!: {
+    state: boolean
+  };
   public answerWordArray!: string[];
   public beforeFirstHalfQuantity!: string[];
   public afterFirstHalfQuantity!: string[];
@@ -49,7 +62,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public answerLargerThan6!: boolean;
   public firstHalfAnswer!: WordText[];
   public secondHalfAnswer!: WordText[];
-
+  private currentIdParsed:number = parseFloat(this.currentId);
   // 
 
 
@@ -67,6 +80,11 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   }
 
 
+  public componentEmit() {
+    this.componentInit.state = true;
+    this.componentInitEmit.emit();
+  }
+
 
   ngOnInit(): void {
     this.answerWordArray = this.answerWord.word.text.split('');
@@ -75,9 +93,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.spaceToAddLeft = Array.from({ length: 5 - this.beforeFirstHalfQuantity.length }, (v, i) => i);
     this.spaceToAddRight = Array.from({ length: 5 - this.afterFirstHalfQuantity.length }, (v, i) => i);
     this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
-    console.log("main-coomponent");
     this.firstHalfAnswer = Array.from({ length: this.beforeFirstHalfQuantity.length }, x => { return { txt: '', isHint: false } });
     this.secondHalfAnswer = Array.from({ length: this.afterFirstHalfQuantity.length }, x => { return { txt: '', isHint: false } });
+    this.componentEmit();
 
   }
 
@@ -87,6 +105,10 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   ngAfterViewInit(): void {
     this.wordOxTextArray = this.wordOxTex.toArray();
     this.wordInputArray = this.wordInput.toArray();
+    if (this.answerWord.id === 1) {
+      this.updateFocus(0);  
+      this.containerOn = true;
+    }
   }
 
 
@@ -170,27 +192,30 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     } else {
       this.answerWord.isComplete = false;
     }
-    this.answerService.answerWordComplete.emit(this.answerWord.id - 1);
     this.tryUpdateFocus(index)
   }
 
-  private tryUpdateFocus(index: number){
-    // if ()
-    console.log('Trying to update focus, now in index', index)
-    // const indexMod = ;
-    if (index !== this.wordInputArray.length - 1 &&
-      !this.answerWord.isComplete && this.wordInputArray[index].nativeElement.value !== '') {
-      // this.focusInput(indexMod);
-      this.updateFocus(index + 1)
+
+
+  private tryUpdateFocus(index: number) {
+  if (index !== this.wordInputArray.length - 1 &&
+      !this.answerWord.isComplete  
+      ) 
+    {
+      this.updateFocus(index + 1);
     }
   }
 
-  private updateFocus(toIndex: number) {
-    this.erraseAllSelectedInput.emit();
+
+
+  public updateFocus(toIndex: number) {
+    if(!this.answerWord.isCorrect) {
+    this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
     this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text });
     this.wordInputArray[toIndex].nativeElement.focus();
+    this.containerOn = true;
     this.wordOxTextArray[toIndex].element.nativeElement.style.backgroundColor = '#FAFA33';
-    console.log('Updating focus', toIndex)
+    } 
   }
 
 
@@ -205,22 +230,14 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   // }
 
 
-  @HostListener('keydown', ['$event'])
-  asdasdas($event: KeyboardEvent) {
-    const numbers = [0,1,2,3,4,5];
-    if (numbers.includes(+$event.key) ) {
-      this.focusInput(+$event.key);
-    }
-  }
 
-  public focusInput(i: number) {
-    if (!this.answerWord.isCorrect) {
-      this.containerOn = true;
-      this.wordIsCompleteCheck(i);
-    }
-    console.log(this.wordInputArray[i]);
-    console.log(i);
-  }
+  // public focusInput(i: number) {
+  //   if (!this.answerWord.isCorrect) {
+  //     this.containerOn = true;
+  //     this.wordIsCompleteCheck(i);
+  //   }
+
+  // }
 
 
 
@@ -251,18 +268,17 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   //CAMBIAR CHANGING RULES
   public write(event: InputEvent, i: number, stringArray: WordText[]): void {
-    if ([1,2,3,4,5,6,7,8,9,0].includes(+(event.data as any))) {
-      event.stopPropagation();
-      event.preventDefault();
-      return;
-    }
+    console.log(i);
+     const e = i + this.beforeFirstHalfQuantity.length;
     if (stringArray[i].txt !== '') {
-      console.log(i);
       stringArray[i].txt = event.data as string;
-      // this.focusFixed(i, stringArray)
-    } else {
-      // this.focusFixed(i, stringArray)
-    }
+    } 
+    if(stringArray === this.secondHalfAnswer) {
+      this.wordIsCompleteCheck(e);
+    } else  {
+      this.wordIsCompleteCheck(i);
+  
+     }
 
   }
 
@@ -281,12 +297,12 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
 
-  public erraseLetter(event: any, i: number) {
-    if (event.data === 8 || event.data === 46) {
-      this.wordForAnswer[i] = '';
-      this.focusInput(i);
-    }
-  }
+  // public erraseLetter(event: any, i: number) {
+  //   if (event.data === 8 || event.data === 46) {
+  //     this.wordForAnswer[i] = '';
+  //     this.focusInput(i);
+  //   }
+  // }
 
 
   correctAnswerAnimation() {

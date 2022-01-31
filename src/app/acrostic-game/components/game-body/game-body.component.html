@@ -27,7 +27,10 @@
         path="mini-lessons/executive-functions/acrostic/svg/background.svg">
       </mlc-loaded-svg>
       <div fxLayout="column" fxLayoutAlign="center center" style="transform: translateY(1.5vh);" class="myAbsolute">
-        <app-main-letter (erraseAllSelectedInput)="erraseAllSelectedInput()" #mainLetter style="transform: scale(0);"
+        <app-main-letter  #mainLetter style="transform: scale(0);"
+        (componentInitEmit)="mainLetterCompToArray()"
+         [componentInit]="componentsInit[i]"
+         [currentId]="currentWordId"
           *ngFor="let letter of exerciseWordArray; let i = index" [exerciseWordArray]="exerciseWordArray"
           [mainLetter]="letter" [answerWord]="horizontalWords[i]" ></app-main-letter>
       </div>
