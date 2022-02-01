@@ -57,13 +57,9 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     private feedbackService: FeedbackOxService,
     private answerService: AcrosticAnswerService) {
     super()
-    // this.addSubscription(this.answerService.answerWordComplete, x => {
-    //   if (this.mainLetterComponentArray[x].answerWord.isComplete && !this.mainLetterComponentArray[x].answerWord.isCorrect) {
-    //     this.wordIsComplete = true;
-    //   } else {
-    //     this.wordIsComplete = false;
-    //   }
-    // })
+    this.addSubscription(this.answerService.answerWordComplete, x => {
+      this.wordIsComplete = x;
+    })
     this.addSubscription(this.challengeService.wordHasBeenSelected, d => {
       this.currentWordId = d.id + '';
       this.currentWordDefinition = d.definition;

@@ -13,7 +13,7 @@ export class AcrosticAnswerService extends AnswerService {
   }
 
 
-  answerWordComplete = new EventEmitter<number>();
+  answerWordComplete = new EventEmitter<boolean>();
   answerForCorrection = new EventEmitter();
 
   constructor(private gameActionsService: GameActionsService<any>,

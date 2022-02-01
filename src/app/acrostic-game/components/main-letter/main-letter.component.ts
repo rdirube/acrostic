@@ -8,7 +8,7 @@ import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-chall
 import { duplicateWithJSON, equalArrays, isEven, ScreenTypeOx } from 'ox-types';
 import anime from 'animejs';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
-import { timer } from 'rxjs';
+import { Observable, timer } from 'rxjs';
 
 @Component({
   selector: 'app-main-letter',
@@ -32,20 +32,22 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   @ViewChildren('squareImage2')
   squareImage2!: QueryList<LoadedSvgComponent>;
 
-  
+
 
   @Output() erraseAllSelectedInput = new EventEmitter();
   @Output() componentInitEmit = new EventEmitter();
   @Input() exerciseWordArray!: string[];
   @Input() mainLetter!: string
   @Input() answerWord!: WordAnswer;
-  @Input() set currentId (value:string) {
+  @Input() set currentId(value: string) {
     this.currentIdParsed = parseFloat(value);
-    if(this.answerWord !== undefined &&  this.currentIdParsed !== this.answerWord.id ) {
+    if (this.answerWord !== undefined && this.currentIdParsed !== this.answerWord.id) {
       this.containerOn = false;
       this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF");
     }
-   }
+  }
+  focusPreparation = new Observable<number>();
+  focusReadyToChange = new Observable<number>();
 
   @Input() componentInit!: {
     state: boolean
@@ -62,7 +64,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public answerLargerThan6!: boolean;
   public firstHalfAnswer!: WordText[];
   public secondHalfAnswer!: WordText[];
-  private currentIdParsed:number = parseFloat(this.currentId);
+  private currentIdParsed: number = parseFloat(this.currentId);
+  public correctWithAccent:boolean = true;
+  public alphabetArray: string[] = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMÑOPQRSTUVWXYZáéóíúÁÉÍÚÓ´".split('');
   // 
 
 
@@ -76,14 +80,13 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         this.answerCorrection()
       }
     })
+
     this.containerOn = false;
   }
 
 
-  public componentEmit() {
-    this.componentInit.state = true;
-    this.componentInitEmit.emit();
-  }
+  
+
 
 
   ngOnInit(): void {
@@ -95,7 +98,6 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
     this.firstHalfAnswer = Array.from({ length: this.beforeFirstHalfQuantity.length }, x => { return { txt: '', isHint: false } });
     this.secondHalfAnswer = Array.from({ length: this.afterFirstHalfQuantity.length }, x => { return { txt: '', isHint: false } });
-    this.componentEmit();
 
   }
 
@@ -106,7 +108,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.wordOxTextArray = this.wordOxTex.toArray();
     this.wordInputArray = this.wordInput.toArray();
     if (this.answerWord.id === 1) {
-      this.updateFocus(0);  
+      this.updateFocus(0);
       this.containerOn = true;
     }
   }
@@ -157,152 +159,120 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   }
 
 
+  private removeAccents(word:string): string[] {
+    const answerStringNoAccent = word.normalize('NFD').replace(/[^\w]/g, '');;
+    return answerStringNoAccent.split('');  
+  }
 
 
-  answerCorrection() {
-    if (this.answerWord.isComplete && !this.answerWord.isCorrect) {
-      const concatAnswer: string[] = this.firstHalfAnswer.map(z => z.txt).concat(this.mainLetter).concat(this.secondHalfAnswer.map(y => y.txt));
-      if (equalArrays(concatAnswer, this.answerWordArray)) {
-        this.correctAnswerAnimation();
-        this.answerWord.isCorrect = true;
-        this.answerWord.isComplete = false;
-        this.gameActions.checkedAnswer.emit({
-          correctness: 'correct',
-          answer: {
-            parts: []
-          }
-        })
-      } else {
-        this.wrongAnswerAnimation();
+
+  private answerIsCorrect(arr1:string[], arr2:string[]):void {
+    if (equalArrays(arr1, arr2)) {
+      this.correctAnswerAnimation();
+      this.answerWord.isCorrect = true;
+      this.answerWord.isComplete = false;
+      this.gameActions.checkedAnswer.emit({
+        correctness: 'correct',
+        answer: {
+          parts: []
+        }
+      })
+    } else {
+      this.wrongAnswerAnimation();
         this.gameActions.checkedAnswer.emit({
           correctness: 'wrong',
           answer: {
             parts: []
           }
         })
+    }
+  }
+
+
+
+  answerCorrection() {
+    if (this.answerWord.isComplete && !this.answerWord.isCorrect) {
+      const concatAnswer: string[] = this.firstHalfAnswer.map(z => z.txt).concat(this.mainLetter).concat(this.secondHalfAnswer.map(y => y.txt));
+      if(!this.correctWithAccent) {
+        const answerString = concatAnswer.join('');
+        const answerArrayNoAccent = this.removeAccents(answerString);
+        const horizontalWordArrayNoAccent = this.removeAccents(this.answerWord.word.text);
+        this.answerIsCorrect(answerArrayNoAccent, horizontalWordArrayNoAccent);
+      } else {
+        this.answerIsCorrect(concatAnswer, this.answerWordArray)
       }
     }
   }
 
 
 
-  wordIsCompleteCheck(index: number) {
+
+  wordIsCompleteCheck() {
     if (this.wordForAnswer.every(word => word !== '')) {
       this.answerWord.isComplete = true;
+      this.answerService.answerWordComplete.emit(true)
     } else {
       this.answerWord.isComplete = false;
-    }
-    this.tryUpdateFocus(index)
-  }
-
-
-
-  private tryUpdateFocus(index: number) {
-  if (index !== this.wordInputArray.length - 1 &&
-      !this.answerWord.isComplete  
-      ) 
-    {
-      this.updateFocus(index + 1);
+      this.answerService.answerWordComplete.emit(false)
     }
   }
 
 
 
   public updateFocus(toIndex: number) {
-    if(!this.answerWord.isCorrect) {
-    this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
-    this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text });
-    this.wordInputArray[toIndex].nativeElement.focus();
-    this.containerOn = true;
-    this.wordOxTextArray[toIndex].element.nativeElement.style.backgroundColor = '#FAFA33';
-    } 
+    if (!this.answerWord.isCorrect) {
+      this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
+      this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text });
+      this.containerOn = true;
+      this.wordOxTextArray[toIndex].element.nativeElement.style.backgroundColor = '#FAFA33';
+      this.wordInputArray[toIndex].nativeElement.focus();
+      this.wordIsCompleteCheck()
+    }
   }
 
 
 
-  // public focusToTheRight(i: number) {
-  //   // const indexMod = i === this.wordInputArray.length - 1 ? i : i + 1;
-  //   const indexMod = i + 1;
-  //   if (i !== this.wordInputArray.length - 1 &&
-  //     !this.answerWord.isComplete && this.wordInputArray[indexMod].nativeElement.value === '') {
-  //     this.focusInput(indexMod);
-  //   }
-  // }
-
-
-
-  // public focusInput(i: number) {
-  //   if (!this.answerWord.isCorrect) {
-  //     this.containerOn = true;
-  //     this.wordIsCompleteCheck(i);
-  //   }
-
-  // }
-
-
-
-
-  // public myMethod(e: InputEvent, index: number) {
-  //   this.firstHalfAnswer[index].txt = e.data as string;
-  // }
-
-
-
-  // public onBeforeInput(e: InputEvent) {
-  //   console.log('onBeforeInput', e);
-  //   if (e.data !== (e.target as any).value && (e.target as any).value.length) {
-  //     (e.target as any).value = e.data;
-  //   } else {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //   }
-
-  //   if (
-  //     ![1,2,3,4,5,6,7,8,9,0].includes(e.data as any) 
-
-  //   )
-  //   (e.target as any).value = '';
-  // }
+  public updateFocusPart2(toIndex: number) {
+    if (toIndex !== this.wordInputArray.length &&
+      !this.answerWord.isComplete) {
+      const squareToFocus = this.wordInputArray.slice(toIndex + 1);
+      const adjustVariable = squareToFocus.findIndex(z => z.nativeElement.value === '');
+      if (adjustVariable !== -1 && this.wordInputArray[toIndex].nativeElement.value !== '´') {
+        const indexToFocus = this.wordInputArray.length - squareToFocus.length + adjustVariable;
+        this.updateFocus(indexToFocus);
+      } else {
+        this.wordInputArray[toIndex].nativeElement.focus();
+        this.wordIsCompleteCheck()
+      }
+    }
+  }
 
 
 
   //CAMBIAR CHANGING RULES
   public write(event: InputEvent, i: number, stringArray: WordText[]): void {
-    console.log(i);
-     const e = i + this.beforeFirstHalfQuantity.length;
-    if (stringArray[i].txt !== '') {
-      stringArray[i].txt = event.data as string;
-    } 
-    if(stringArray === this.secondHalfAnswer) {
-      this.wordIsCompleteCheck(e);
-    } else  {
-      this.wordIsCompleteCheck(i);
-  
-     }
+    const inputIsAvaiable = this.alphabetArray.find(z => z === event.data);
+    if (inputIsAvaiable) {
+      if (stringArray[i].txt !== '') {
+        stringArray[i].txt = event.data as string;
+      }
+    } else if (event.data === null) {
+      stringArray[i].txt = '';
+    } else {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
+
+  public onFocus(i: number) {
 
   }
 
 
+
   //CAMBIAR CHANGING RULES
-  // public focusFixed(i: number, stringArray: { txt: string }[]) {
-  //   if (stringArray === this.secondHalfAnswer) {
-  //     this.focusToTheRight(i + this.firstHalfAnswer.length);
-  //   }
-  //   else if (i === this.firstHalfAnswer.length - 1 && this.secondHalfAnswer[0].txt === '') {
-  //     this.focusInput(this.firstHalfAnswer.length);
-  //   } else {
-  //     this.focusToTheRight(i);
-  //   }
-  // }
 
-
-
-  // public erraseLetter(event: any, i: number) {
-  //   if (event.data === 8 || event.data === 46) {
-  //     this.wordForAnswer[i] = '';
-  //     this.focusInput(i);
-  //   }
-  // }
 
 
   correctAnswerAnimation() {

@@ -9,7 +9,7 @@
      <mlc-loaded-svg #squareImage0 [ngStyle]="{'filter': containerOn ? 'grayscale(0)' : 'grayscale(2)'}" [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'" path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg"></mlc-loaded-svg>
      <input #wordInput  
      (beforeinput)="write($event,i, firstHalfAnswer)"
-     
+     (input)="updateFocusPart2(i)"
      [(ngModel)]="firstHalfAnswer[i].txt" type="text" 
        style="width: 1px;height: 1px;" maxlength="1">
        <ox-text #wordOxText [originalText]="firstHalfAnswer[i].txt" (click)="updateFocus(i)" [ngClass]="answerLargerThan6 ? 'ox-text-small': 'ox-text'" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
@@ -20,7 +20,7 @@
 </div>
 <div *ngFor="let word of afterFirstHalfQuantity; let i = index"  class="div-container"  fxLayoutAlign="center center">
         <mlc-loaded-svg #squareImage2 path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg" [ngStyle]="{'filter': containerOn ? 'grayscale(0)' : 'grayscale(2)'}" [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'"></mlc-loaded-svg> 
-        <input #wordInput  (beforeinput)="write($event, i, secondHalfAnswer)" [(ngModel)]="secondHalfAnswer[i].txt" style="width: 1px;height: 1px;"
+        <input #wordInput  (beforeinput)="write($event, i, secondHalfAnswer)" [(ngModel)]="secondHalfAnswer[i].txt" style="width: 1px;height: 1px;" (input)="updateFocusPart2(i + beforeFirstHalfQuantity.length)"
         type="text"  maxlength="1">
         <ox-text #wordOxText  [originalText]="secondHalfAnswer[i].txt" (click)="updateFocus(i + beforeFirstHalfQuantity.length)" [ngClass]="answerLargerThan6 ? 'ox-text-small': 'ox-text'" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
 </div>
