@@ -34,14 +34,14 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
 
-  @Output() erraseAllSelectedInput = new EventEmitter();
   @Output() componentInitEmit = new EventEmitter();
   @Input() exerciseWordArray!: string[];
   @Input() mainLetter!: string
   @Input() answerWord!: WordAnswer;
+  @Input() init!:boolean;
   @Input() set currentId(value: string) {
     this.currentIdParsed = parseFloat(value);
-    if (this.answerWord !== undefined && this.currentIdParsed !== this.answerWord.id) {
+    if (this.answerWord !== undefined && this.currentIdParsed !== this.answerWord.id && !this.answerWord.isCorrect) {
       this.containerOn = false;
       this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF");
     }
@@ -52,6 +52,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   @Input() componentInit!: {
     state: boolean
   };
+  @Input() correctionWithAccent!:boolean;
+  @Input() answerLargerThan6!: boolean;
   public answerWordArray!: string[];
   public beforeFirstHalfQuantity!: string[];
   public afterFirstHalfQuantity!: string[];
@@ -61,11 +63,10 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public wordInputArray!: any[];
   public isCorrect!: boolean;
   public containerOn!: boolean;
-  public answerLargerThan6!: boolean;
   public firstHalfAnswer!: WordText[];
   public secondHalfAnswer!: WordText[];
   private currentIdParsed: number = parseFloat(this.currentId);
-  public correctWithAccent:boolean = true;
+  // public correctWithAccent:boolean = true;
   public alphabetArray: string[] = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMÑOPQRSTUVWXYZáéóíúÁÉÍÚÓ´".split('');
   // 
 
@@ -82,6 +83,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     })
 
     this.containerOn = false;
+
   }
 
 
@@ -95,10 +97,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.afterFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainLetter, false);
     this.spaceToAddLeft = Array.from({ length: 5 - this.beforeFirstHalfQuantity.length }, (v, i) => i);
     this.spaceToAddRight = Array.from({ length: 5 - this.afterFirstHalfQuantity.length }, (v, i) => i);
-    this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
     this.firstHalfAnswer = Array.from({ length: this.beforeFirstHalfQuantity.length }, x => { return { txt: '', isHint: false } });
     this.secondHalfAnswer = Array.from({ length: this.afterFirstHalfQuantity.length }, x => { return { txt: '', isHint: false } });
-
   }
 
 
@@ -111,6 +111,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       this.updateFocus(0);
       this.containerOn = true;
     }
+    this.init = false;
+    console.log(this.correctionWithAccent);
   }
 
 
@@ -159,6 +161,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   }
 
 
+  
+
   private removeAccents(word:string): string[] {
     const answerStringNoAccent = word.normalize('NFD').replace(/[^\w]/g, '');;
     return answerStringNoAccent.split('');  
@@ -193,7 +197,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   answerCorrection() {
     if (this.answerWord.isComplete && !this.answerWord.isCorrect) {
       const concatAnswer: string[] = this.firstHalfAnswer.map(z => z.txt).concat(this.mainLetter).concat(this.secondHalfAnswer.map(y => y.txt));
-      if(!this.correctWithAccent) {
+      if(!this.correctionWithAccent) {
         const answerString = concatAnswer.join('');
         const answerArrayNoAccent = this.removeAccents(answerString);
         const horizontalWordArrayNoAccent = this.removeAccents(this.answerWord.word.text);
@@ -221,12 +225,14 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   public updateFocus(toIndex: number) {
     if (!this.answerWord.isCorrect) {
-      this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
       this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text });
       this.containerOn = true;
-      this.wordOxTextArray[toIndex].element.nativeElement.style.backgroundColor = '#FAFA33';
-      this.wordInputArray[toIndex].nativeElement.focus();
-      this.wordIsCompleteCheck()
+      this.focusAndCheckComplete(toIndex);
+      if(!this.init){
+        this.soundService.playSoundEffect('sounds/selectedInput.mp3', ScreenTypeOx.Game)
+      }
+    } else {
+      this.soundService.playSoundEffect('sounds/cantClick.mp3', ScreenTypeOx.Game);
     }
   }
 
@@ -239,14 +245,20 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       const adjustVariable = squareToFocus.findIndex(z => z.nativeElement.value === '');
       if (adjustVariable !== -1 && this.wordInputArray[toIndex].nativeElement.value !== '´') {
         const indexToFocus = this.wordInputArray.length - squareToFocus.length + adjustVariable;
-        this.updateFocus(indexToFocus);
-      } else {
-        this.wordInputArray[toIndex].nativeElement.focus();
-        this.wordIsCompleteCheck()
+        this.focusAndCheckComplete(indexToFocus);
+          } else {
+        this.focusAndCheckComplete(toIndex);    
       }
     }
   }
 
+
+  private focusAndCheckComplete(i:number) {
+    this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
+    this.wordOxTextArray[i].element.nativeElement.style.backgroundColor = '#FAFA33';
+    this.wordInputArray[i].nativeElement.focus();
+    this.wordIsCompleteCheck()  
+  }
 
 
   //CAMBIAR CHANGING RULES
@@ -256,17 +268,13 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       if (stringArray[i].txt !== '') {
         stringArray[i].txt = event.data as string;
       }
+      this.soundService.playSoundEffect('sounds/keypressOk.mp3', ScreenTypeOx.Game)
     } else if (event.data === null) {
       stringArray[i].txt = '';
     } else {
       event.stopPropagation();
       event.preventDefault();
     }
-  }
-
-
-  public onFocus(i: number) {
-
   }
 
 
@@ -283,7 +291,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       easing: 'easeOutExpo'
     }, {
       scale: '1',
-      translateY: '0',
+      translateY: '0vh',
+      translateX: '-0,8vh',
       easing: 'easeOutExpo'
     }]
     anime({
@@ -297,13 +306,15 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       delay: anime.stagger(150, { start: 300 }),
       keyframes
     })
-
   }
+
 
 
   get wordForAnswer(): string[] {
     return this.firstHalfAnswer.map(z => z.txt).concat(this.mainLetter).concat(this.secondHalfAnswer.map(o => o.txt));
   }
+
+
 
 
   wrongAnswerAnimation() {
@@ -330,6 +341,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   public hintAppearence() {
+    this.soundService.playSoundEffect('sounds/hint.mp3', ScreenTypeOx.Game)
     const translateX = Array.from(Array(7).keys()).map((z, i) => {
       return { value: isEven(i) ? -6 : -2, duration: 200 };
     }).concat([{ value: -4, duration: 100 }]);
@@ -351,6 +363,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         this.secondHalfAnswer.forEach(letter => letter.isHint = false)
       }
     })
+
   }
 
 

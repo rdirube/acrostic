@@ -8,6 +8,7 @@
  <div *ngFor="let word of beforeFirstHalfQuantity; let i = index" class="div-container" fxLayoutAlign="center center">
      <mlc-loaded-svg #squareImage0 [ngStyle]="{'filter': containerOn ? 'grayscale(0)' : 'grayscale(2)'}" [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'" path="mini-lessons/executive-functions/acrostic/svg/container-orange.svg"></mlc-loaded-svg>
      <input #wordInput  
+    
      (beforeinput)="write($event,i, firstHalfAnswer)"
      (input)="updateFocusPart2(i)"
      [(ngModel)]="firstHalfAnswer[i].txt" type="text" 

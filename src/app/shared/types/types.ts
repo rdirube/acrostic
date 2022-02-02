@@ -45,6 +45,9 @@ export interface WordAnswer {
           text:string,
           video:string
       }[]
+    },
+    advancedSettings: {
+      correctWithAccent:boolean
     }
   }
 
@@ -68,7 +71,8 @@ export interface WordAnswer {
       text:string;
       audio:string;
     },
-    horizontalWord: HorizontalWord
+    horizontalWord: HorizontalWord,
+    correctionWithAccent:boolean
   }
 
 

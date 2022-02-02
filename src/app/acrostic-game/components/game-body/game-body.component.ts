@@ -47,8 +47,9 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   public componentsInit: {
     state: boolean
   }[] = []
-
-
+  public correctionWithAccent!:boolean;
+  public answerLargerThan6!:boolean;
+  public init: boolean = true;
   constructor(private challengeService: AcrosticChallengeService,
     private metricsService: MicroLessonMetricsService<any>,
     private gameActions: GameActionsService<any>,
@@ -83,19 +84,21 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         this.exerciseWordArray.forEach((word, i) => this.componentsInit.push({
           state: false
         }));
+        this.correctionWithAccent = exercise.exerciseData.correctionWithAccent;
         console.log(this.componentsInit);
         this.currentWordId = 1 + '';
         this.currentWordDefinition = this.horizontalWords[0].description.text;
+        this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
         this.startGame();
       });
   }
 
 
 
-
   ngOnInit(): void {
     console.log("body-component")
   }
+
 
 
   ngAfterViewInit(): void {
@@ -124,7 +127,8 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
           duration: 1700,
           keyframes: [{
             translateY: '-18vh',
-          }, {
+          },
+           {
             translateY: '0vh',
           }
           ]
@@ -175,11 +179,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
 
 
-  public erraseAllSelectedInput() {
-    const incompleteAnswers = this.mainLetterComponent.filter(comp => !comp.answerWord.isCorrect);
-    incompleteAnswers.forEach(ans => ans.wordOxTextArray.forEach(oxText => oxText.element.nativeElement.style.backgroundColor = '#FFFFFF'));
-    incompleteAnswers.forEach(ans => ans.containerOn = false);
-  }
+
 
 
   horizontalWordGenerator(): void {
