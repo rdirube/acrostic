@@ -47,8 +47,10 @@ export interface WordAnswer {
       }[]
     },
     advancedSettings: {
-      correctWithAccent:boolean
+      correctWithAccent:boolean,
+      hintQuantity:number
     }
+  
   }
 
     
@@ -72,7 +74,8 @@ export interface WordAnswer {
       audio:string;
     },
     horizontalWord: HorizontalWord,
-    correctionWithAccent:boolean
+    correctionWithAccent:boolean,
+    hintQuantity:number
   }
 
 

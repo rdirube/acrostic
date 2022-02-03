@@ -5,6 +5,8 @@ import { HorizontalWord, HorizontalWordText, WordAnswer, WordPosition, WordSelec
 import { AnswerService, SoundOxService, GameActionsService } from 'micro-lesson-core';
 import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.service';
 import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-challenge.service';
+import { AcrosticHintService } from 'src/app/shared/services/acrostic-hint.service';
+import { HintService } from 'micro-lesson-core';
 import { duplicateWithJSON, equalArrays, isEven, ScreenTypeOx } from 'ox-types';
 import anime from 'animejs';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
@@ -54,6 +56,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   };
   @Input() correctionWithAccent!:boolean;
   @Input() answerLargerThan6!: boolean;
+  @Input() hintQuantity!:{
+    quantity:number
+  }
   public answerWordArray!: string[];
   public beforeFirstHalfQuantity!: string[];
   public afterFirstHalfQuantity!: string[];
@@ -66,6 +71,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public firstHalfAnswer!: WordText[];
   public secondHalfAnswer!: WordText[];
   private currentIdParsed: number = parseFloat(this.currentId);
+  public hintCounter:number = 0;
   // public correctWithAccent:boolean = true;
   public alphabetArray: string[] = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMÑOPQRSTUVWXYZáéóíúÁÉÍÚÓ´".split('');
   // 
@@ -73,21 +79,21 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   constructor(private answerService: AcrosticAnswerService, private cdr: ChangeDetectorRef, private challengeService: AcrosticChallengeService
-    , private soundService: SoundOxService, public gameActions: GameActionsService<any>, public elementRef: ElementRef) {
+    , private soundService: SoundOxService, public gameActions: GameActionsService<any>, public elementRef: ElementRef, private hintService:AcrosticHintService) {
     super();
-
     this.addSubscription(this.answerService.answerForCorrection, x => {
-      if (this.answerWord.isComplete && this.containerOn) {
-        this.answerCorrection()
+      if(this.containerOn && !this.answerWord.isCorrect) {
+        if(this.answerWord.isComplete) {
+          this.answerCorrection()
+        } else {
+          this.soundService.playSoundEffect('sounds/cantClick.mp3', ScreenTypeOx.Game);
+        }
       }
     })
-
     this.containerOn = false;
-
   }
 
 
-  
 
 
 
@@ -112,9 +118,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       this.containerOn = true;
     }
     this.init = false;
-    console.log(this.correctionWithAccent);
   }
-
 
 
 
@@ -170,6 +174,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
 
+
   private answerIsCorrect(arr1:string[], arr2:string[]):void {
     if (equalArrays(arr1, arr2)) {
       this.correctAnswerAnimation();
@@ -191,6 +196,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         })
     }
   }
+
 
 
 
@@ -223,6 +229,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
 
+
   public updateFocus(toIndex: number) {
     if (!this.answerWord.isCorrect) {
       this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text });
@@ -235,6 +242,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       this.soundService.playSoundEffect('sounds/cantClick.mp3', ScreenTypeOx.Game);
     }
   }
+
 
 
 
@@ -253,24 +261,36 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   }
 
 
+
+
   private focusAndCheckComplete(i:number) {
     this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
     this.wordOxTextArray[i].element.nativeElement.style.backgroundColor = '#FAFA33';
     this.wordInputArray[i].nativeElement.focus();
-    this.wordIsCompleteCheck()  
+    this.wordIsCompleteCheck();
+    this.hintService.hintsAvaiable.emit({index:this.answerWord.id - 1, isComplete:this.answerWord.isComplete});
+  
   }
+
+
 
 
   //CAMBIAR CHANGING RULES
   public write(event: InputEvent, i: number, stringArray: WordText[]): void {
     const inputIsAvaiable = this.alphabetArray.find(z => z === event.data);
     if (inputIsAvaiable) {
-      if (stringArray[i].txt !== '') {
+      if (stringArray[i].txt !== '' && stringArray[i].txt !== '´') {
         stringArray[i].txt = event.data as string;
+        if(stringArray === this.secondHalfAnswer) {
+          this.updateFocusPart2(i + this.beforeFirstHalfQuantity.length)
+        } else {
+          this.updateFocusPart2(i);
+        }
       }
       this.soundService.playSoundEffect('sounds/keypressOk.mp3', ScreenTypeOx.Game)
     } else if (event.data === null) {
       stringArray[i].txt = '';
+      this.answerWord.isComplete = false;
     } else {
       event.stopPropagation();
       event.preventDefault();
@@ -281,20 +301,28 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   //CAMBIAR CHANGING RULES
 
-
-
   correctAnswerAnimation() {
     this.soundService.playSoundEffect('sounds/rightAnswer.mp3', ScreenTypeOx.Game);
-    const keyframes = [{
+    const restoreAnimation = {
+      scale: '1',
+      translateY: '0vh',
+      easing: 'easeOutExpo'
+    }
+    const keyframesSquare = [{
       scale: '1.08',
       translateY: '-1.5vh',
       easing: 'easeOutExpo'
-    }, {
-      scale: '1',
-      translateY: '0vh',
-      translateX: '-0,8vh',
+    }, 
+    restoreAnimation 
+  ]
+    const keyframes = [{
+      scale: '1.08',
+      translateY: '-1.5vh',
+      translateX: '-0.6vh',
       easing: 'easeOutExpo'
-    }]
+    }, 
+     restoreAnimation  
+  ]
     anime({
       targets: [this.wordOxTextArray.map(oxText => oxText.element.nativeElement)],
       delay: anime.stagger(150, { start: 300 }),
@@ -304,7 +332,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     anime({
       targets: [this.squareImage0.map(square => square.elementRef.nativeElement), this.squareImage2.map(square => square.elementRef.nativeElement)],
       delay: anime.stagger(150, { start: 300 }),
-      keyframes
+      keyframesSquare
     })
   }
 

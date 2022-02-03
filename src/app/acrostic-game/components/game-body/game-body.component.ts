@@ -10,6 +10,7 @@ import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-chall
 import { ExerciseOx } from 'ox-core';
 import { anyElement, ExerciseData, MultipleChoiceSchemaData, OptionShowable, OxImageInfo, ScreenTypeOx, Showable } from 'ox-types';
 import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.service';
+import { AcrosticHintService } from 'src/app/shared/services/acrostic-hint.service';
 import { AcrosticExercise, HorizontalWord, WordAnswer } from 'src/app/shared/types/types';
 import { SubscriberOxDirective } from 'micro-lesson-components';
 import { MainLetterComponent } from '../main-letter/main-letter.component';
@@ -17,6 +18,7 @@ import { CompileReflector } from '@angular/compiler';
 import anime from 'animejs';
 import { filter, take } from 'rxjs/operators';
 import { timer } from 'rxjs';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
 
 @Component({
@@ -44,11 +46,15 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   private mainLetterComponentArray!: any[];
   public countDownImageInfo: OxImageInfo | undefined;
   public exercise!: AcrosticExercise;
+  public hintAvaible:boolean = false;
   public componentsInit: {
     state: boolean
-  }[] = []
-  public correctionWithAccent!:boolean;
-  public answerLargerThan6!:boolean;
+  }[] = [];
+  public hintQuantity: {
+    quantity: number
+  }[] = [];
+  public correctionWithAccent!: boolean;
+  public answerLargerThan6!: boolean;
   public init: boolean = true;
   constructor(private challengeService: AcrosticChallengeService,
     private metricsService: MicroLessonMetricsService<any>,
@@ -56,7 +62,8 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     private hintService: HintService,
     private soundService: SoundOxService,
     private feedbackService: FeedbackOxService,
-    private answerService: AcrosticAnswerService) {
+    private answerService: AcrosticAnswerService,
+    private AcrosticHintService:AcrosticHintService) {
     super()
     this.addSubscription(this.answerService.answerWordComplete, x => {
       this.wordIsComplete = x;
@@ -81,9 +88,15 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         this.exerciseWord = exercise.exerciseData.verticalWord.text;
         this.exerciseWordArray = this.exerciseWord.split('');
         this.horizontalWordGenerator();
-        this.exerciseWordArray.forEach((word, i) => this.componentsInit.push({
-          state: false
-        }));
+        this.exerciseWordArray.forEach((word, i) => {
+          this.componentsInit.push({
+            state: false
+          });
+          this.hintQuantity.push({
+            quantity: exercise.exerciseData.hintQuantity
+          })
+        }
+        );
         this.correctionWithAccent = exercise.exerciseData.correctionWithAccent;
         console.log(this.componentsInit);
         this.currentWordId = 1 + '';
@@ -91,6 +104,10 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
         this.startGame();
       });
+      this.addSubscription(this.AcrosticHintService.hintsAvaiable, info => {
+        this.hintAvaible = (this.hintQuantity[info.index].quantity === 0 || info.isComplete) ? false : true
+        console.log(this.hintAvaible);
+      })
   }
 
 
@@ -128,7 +145,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
           keyframes: [{
             translateY: '-18vh',
           },
-           {
+          {
             translateY: '0vh',
           }
           ]
@@ -197,8 +214,11 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
 
   public hintGenerator() {
-    const selectedWord = this.mainLetterComponent.find(word => word.containerOn);
+    const selectedWord = this.mainLetterComponent.find(word => word.containerOn && !word.answerWord.isCorrect);
+    const wordIndex = this.exercise.horizontalWord.word.findIndex(word => word === selectedWord?.answerWord.word);
     const emptyIndex = selectedWord?.answerWordArray.map((letter, i) => i).filter(index => selectedWord.wordForAnswer[index] === '');
+    if(!selectedWord?.answerWord.isComplete && this.hintQuantity[wordIndex].quantity > 0) {
+    this.hintQuantity[wordIndex].quantity --;
     const indexToAdd = anyElement(emptyIndex as any);
     if (indexToAdd as number <= (selectedWord as any).firstHalfAnswer.length) {
       (selectedWord as any).firstHalfAnswer[indexToAdd as number].txt = selectedWord?.answerWordArray[indexToAdd as number];
@@ -208,8 +228,12 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
       (selectedWord as any).secondHalfAnswer[indexToAdd as number - (selectedWord as any).firstHalfAnswer.length - 1].isHint = true;
     }
     selectedWord?.hintAppearence();
+    this.AcrosticHintService.hintsAvaiable.emit({
+      index:wordIndex,
+      isComplete: selectedWord?.answerWord.isComplete as boolean
+    });
   }
-
+}
 
 
   onCountDownTimeUpdated() {

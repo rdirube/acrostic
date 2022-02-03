@@ -1,30 +1,31 @@
 <div fxFlex="grow" fxLayoutAlign="center center" style="position: relative; background: lightsalmon">
   <div class="myAbsolute full-width" style="height: 13vh; z-index: 10" fxLayoutAlign="space-between">
-    <mlc-to-in-game-menu-button [forceNoAnimations]="true" class='button-menu'
-      style="width: 13vh; transform: translateX(-13vh);" svgPath="mini-lessons/executive-functions/buttons/menu.svg">
+    <mlc-to-in-game-menu-button [forceNoAnimations]="true"
+      style="width: 13vh;" svgPath="mini-lessons/executive-functions/buttons/menu.svg">
     </mlc-to-in-game-menu-button>
     <div fxLayoutAlign="center end" style="transform: translateY(4vh);">
       <div fxLayoutAlign="center center" class="indicator-container" style="transform: translateY(-18vh);">
-        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/indicator.svg"
+        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/indicator.svg"
           style="height:14.8vh;width: 12vh; transform: translate(1vh,-1.15vh);"></mlc-loaded-svg>
         <ox-text style="position: absolute; transform: translate(1vh,-0.5vh)" [originalText]="currentWordId"
           fontSize="7.5vh" color="white" font="dinnRegular"></ox-text>
       </div>
       <div fxLayoutAlign="center center" class="explanation-container" style="transform: translateY(-18vh);">
-        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/svg/header-background-18.svg"
+        <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/header-background-18.svg"
           style="width: 89vh;"></mlc-loaded-svg>
         <ox-text style="position: absolute;width:80vh" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
           font="dinnRegular"></ox-text>
       </div>
     </div>
-    <mlc-hint-button class="button-hint" style="width: 13vh;"
-      svgPath="mini-lessons/executive-functions/buttons/pista.svg">
+    <mlc-hint-button  [ngStyle] = "{'opacity': hintAvaible ? '1' : '0.5'}"  style="width: 13vh; opacity: 1;"
+      svgPath="mini-lessons/executive-functions/buttons/pista.svg"
+      (click)="hintGenerator()">
     </mlc-hint-button>
   </div>
   <div fxFlex="grow" fxFlexFill class="myAbsolute">
     <div fxLayoutAlign="center center" style="position: relative;min-height: 100%;min-width: 100%;">
       <mlc-loaded-svg fxFlex="grow" class="myAbsolute" forceViewBoxTo="''"
-        path="mini-lessons/executive-functions/acrostic/svg/background.svg">
+        path="mini-lessons/executive-functions/acrostic/volcan/svg/background.svg">
       </mlc-loaded-svg>
       <div fxLayout="column" fxLayoutAlign="center center" [ngStyle]="{'transform': answerLargerThan6 ? 'translate(-4.5vh, 0.5vh)' : 'translateY(1.5vh)'}" class="myAbsolute">
         <app-main-letter  #mainLetter style="transform: scale(0);"
@@ -39,11 +40,11 @@
       </div>
     </div>
     <div class="elements-container" fxLayoutAlign="space-between end">
-      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/surrender.svg" (click)="hintGenerator()" class="game-element">
+      <mlc-loaded-svg path="mini-lessons/executive-functions/buttons/surrender.svg"  class="game-element">
       </mlc-loaded-svg>
-      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/check.svg" 
+      <mlc-loaded-svg path="mini-lessons/executive-functions/buttons/check.svg" 
         [ngClass]="wordIsComplete ? 'game-element': 'disable-element'" (click)="tryAnswer()"></mlc-loaded-svg>
-      <mlc-loaded-svg path="mini-lessons/executive-functions/elements/next-memotest.svg" class="game-element">
+      <mlc-loaded-svg path="mini-lessons/executive-functions/buttons/next-memotest.svg" class="game-element">
       </mlc-loaded-svg>
     </div>
   </div>

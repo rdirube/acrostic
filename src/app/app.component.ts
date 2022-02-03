@@ -63,26 +63,31 @@ export class AppComponent extends BaseMicroLessonApp {
 
 
   protected getGameResourcesToLoad(): ResourceOx[] {
-    const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg'];
+    const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg'];
 
     const gameResources: string[] = ['background.svg', 'boat-with-water.svg', 'container-blue.svg', 'container-green.svg', 'container-orange.svg',
       'container-red.svg', 'header-background-18.svg', 'indicator.svg'];
 
     const sounds = ['click.mp3', 'bubble01.mp3', 'bubble02.mp3', 'rightAnswer.mp3', 'woosh.mp3', 'wrongAnswer.mp3', 'clickSurrender.mp3', 'cantClick.mp3', 'keypressOk.mp3', 'selectedInput.mp3', 'hint.mp3'].map(z => 'sounds/' + z);
     // 
-    return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/elements/' + x, ResourceType.Svg,
-      [ScreenTypeOx.Game], true)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/svg/' + x, ResourceType.Svg,
+    return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/buttons/' + x, ResourceType.Svg,
+      [ScreenTypeOx.Game], true)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/volcan/svg/' + x, ResourceType.Svg,
         [ScreenTypeOx.Game], true)))
-      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, true))
-      .concat(getResourceArrayFromUrlList(['mini-lessons/executive-functions/buttons/pista.svg',
-        'mini-lessons/executive-functions/buttons/menu.svg'], ResourceType.Svg, true));
+      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, true));
   }
 
-
-
-
+//   return svgElementos.map(x => new ResourceOx('changing_rules/svg/elementos/' + x, ResourceType.Svg,
+//   [ScreenTypeOx.Game], true))
+// .concat(svgIndications.map(x => new ResourceOx('changing_rules/svg/indicación/' + x, ResourceType.Svg,
+//   [ScreenTypeOx.Game], true)))
+// .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false))
+// .concat(getResourceArrayFromUrlList(figuresSvg, ResourceType.Svg, false))
+// .concat(getResourceArrayFromUrlList(['mini-lessons/executive-functions/svg/buttons/Home.svg',
+//   'mini-lessons/executive-functions/svg/buttons/Hint.svg',
+//   'mini-lessons/executive-functions/svg/buttons/saltear.svg'], ResourceType.Svg, false));
 
 }
+
 
 
 function getResourceArrayFromUrlList(urlList: string[], resourceType: ResourceType, isLocal: boolean): ResourceOx[] {
