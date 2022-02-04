@@ -19,7 +19,7 @@
     </div>
     <mlc-hint-button  [ngStyle] = "{'opacity': hintAvaible ? '1' : '0.5'}"  style="width: 13vh; opacity: 1;"
       svgPath="mini-lessons/executive-functions/buttons/pista.svg"
-      (click)="hintGenerator()">
+      >
     </mlc-hint-button>
   </div>
   <div fxFlex="grow" fxFlexFill class="myAbsolute">
@@ -39,13 +39,11 @@
           [mainLetter]="letter" [answerWord]="horizontalWords[i]"></app-main-letter>
       </div>
     </div>
-    <div class="elements-container" fxLayoutAlign="space-between end">
-      <mlc-loaded-svg path="mini-lessons/executive-functions/buttons/surrender.svg"  class="game-element">
-      </mlc-loaded-svg>
-      <mlc-loaded-svg path="mini-lessons/executive-functions/buttons/check.svg" 
-        [ngClass]="wordIsComplete ? 'game-element': 'disable-element'" (click)="tryAnswer()"></mlc-loaded-svg>
-      <mlc-loaded-svg path="mini-lessons/executive-functions/buttons/next-memotest.svg" class="game-element">
-      </mlc-loaded-svg>
+    <div class="elements-container" fxLayoutAlign="center center" style="height: 10.5vh;">
+      <mlc-footer class="button-menu" style=" width: 97.5%; height: 12vh;" 
+      trySvg="mini-lessons/executive-functions/buttons/check.svg" nextSvg="mini-lessons/executive-functions/buttons/next-memotest.svg"
+      surrenderSvg="mini-lessons/executive-functions/buttons/surrender.svg" resultsSvg="mini-lessons/executive-functions/buttons/copa-memotest.svg"
+      ></mlc-footer>
     </div>
   </div>
 </div>

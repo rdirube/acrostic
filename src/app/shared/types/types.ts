@@ -18,14 +18,20 @@ export interface WordAnswer {
 
   export interface WordSelectedEmitValues {
       id:number,
-      definition:string
+      definition:string,
+      isComplete:boolean
   }
 
   export interface WordText {
     txt:string,
-    isHint:boolean
+    isHint:boolean,
+    fixed:boolean
   }
 
+  export interface HintInfo {
+    index:number,
+    isComplete:boolean
+  }
 
   export interface AcrosticNivelation {
     verticalWord: {
