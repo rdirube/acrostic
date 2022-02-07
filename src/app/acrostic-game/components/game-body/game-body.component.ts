@@ -71,22 +71,11 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     private AcrosticHintService:AcrosticHintService) {
     super()
     this.hintService.usesPerChallenge = 0;
-    this.addSubscription(this.answerService.answerWordComplete, x => {
-      this.wordIsComplete = x;
-    })
     this.addSubscription(this.challengeService.wordHasBeenSelected, info => {
       this.currentWordId = info.id + '';
       this.currentWordDefinition = info.definition;
       this.hintService.usesPerChallenge = this.hintQuantity[info.id - 1].quantity + this.hintService.currentUses
       this.hintAvaible = (this.hintQuantity[info.id - 1].quantity === 0 || info.isComplete) ? false : true
-    })
-    this.addSubscription(this.gameActions.checkedAnswer, z => {
-      const correct = z.correctness === 'correct';
-      if (correct) {
-        this.wordIsComplete = false;
-      } else {
-        this.wordIsComplete = true;
-      }
     })
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
       (exercise: ExerciseOx<AcrosticExercise>) => {
@@ -106,7 +95,6 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
           })
         }
         );
-        console.log(this.horizontalWords);
         this.correctionWithAccent = exercise.exerciseData.correctionWithAccent;
         this.currentWordId = 1 + '';
         this.currentWordDefinition = this.horizontalWords[0].description.text;
@@ -116,6 +104,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
       this.addSubscription(this.gameActions.showHint, x => {
         this.showHint();
       })
+      
   }
 
 
@@ -192,7 +181,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
 
   public tryAnswer() {
-    this.answerService.answerForCorrection.emit();
+    this.answerService.tryAnswer.emit();
   }
 
 
@@ -240,10 +229,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
       (selectedWord as any).secondHalfAnswer[indexToAdd as number - (selectedWord as any).firstHalfAnswer.length - 1].isHint = true;
     }
     selectedWord?.hintAppearence();
-    this.AcrosticHintService.hintsAvaiable.emit({
-      index:wordIndex,
-      isComplete: selectedWord?.answerWord.isComplete as boolean
-    });
+
   }
 }
 

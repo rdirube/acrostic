@@ -7,7 +7,7 @@ import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.s
 import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-challenge.service';
 import { AcrosticHintService } from 'src/app/shared/services/acrostic-hint.service';
 import { HintService } from 'micro-lesson-core';
-import { arrayAsSet, CorrectablePart, duplicateWithJSON, equalArrays, isEven, PartCorrectness, PartFormat, ScreenTypeOx } from 'ox-types';
+import { arrayAsSet, CorrectablePart, duplicateWithJSON, equalArrays, isEven, PartCorrectness, PartFormat, ScreenTypeOx, UserAnswer } from 'ox-types';
 import anime from 'animejs';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Observable, timer } from 'rxjs';
@@ -47,7 +47,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.currentIdParsed = parseFloat(value);
     if (this.answerWord !== undefined && this.currentIdParsed !== this.answerWord.id && !this.answerWord.isCorrect) {
       this.containerOn = false;
-      this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF");
+      const answerComplete = this.firstHalfAnswer.concat(this.secondHalfAnswer);
+      const indexFixedHint = answerComplete.map((letter, i) => i).filter(x => !answerComplete[x].fixed)
+      indexFixedHint.forEach(i => this.wordOxTextArray[i].element.nativeElement.style.backgroundColor = "#FFFFFF")
     }
   }
   focusPreparation = new Observable<number>();
@@ -80,10 +82,10 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
 
-  constructor(private answerService: AcrosticAnswerService, private cdr: ChangeDetectorRef, private challengeService: AcrosticChallengeService
+  constructor(private answerService: AnswerService, private cdr: ChangeDetectorRef, private challengeService: AcrosticChallengeService
     , private soundService: SoundOxService, public gameActions: GameActionsService<any>, public elementRef: ElementRef, private hintService: HintService) {
     super();
-    this.addSubscription(this.answerService.answerForCorrection, x => {
+    this.addSubscription(this.answerService.tryAnswer, x => {
       if (this.containerOn && !this.answerWord.isCorrect) {
         if (this.answerWord.isComplete) {
           this.answerCorrection()
@@ -181,20 +183,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       this.correctAnswerAnimation();
       this.answerWord.isCorrect = true;
       this.answerWord.isComplete = false;
-      // this.gameActions.checkedAnswer.emit({
-      //   correctness: 'correct',
-      //   answer: {
-      //     parts: []
-      //   }
-      // })
+      this.answerService.onTryAnswer();
     } else {
       this.wrongAnswerAnimation();
-      // this.gameActions.checkedAnswer.emit({
-      //   correctness: 'wrong',
-      //   answer: {
-      //     parts: []
-      //   }
-      // })
     }
   }
 
@@ -221,11 +212,12 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   wordIsCompleteCheck() {
     if (this.wordForAnswer.every(word => word !== '')) {
       this.answerWord.isComplete = true;
-      this.answerService.answerWordComplete.emit(true)
+      this.gameActions.actionToAnswer.emit();
     } else {
       this.answerWord.isComplete = false;
-      this.answerService.answerWordComplete.emit(false)
+      this.gameActions.actionToAnswer.emit()
     }
+      this.hintService.checkHintAvailable();
   }
 
 
@@ -234,7 +226,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public updateFocus(toIndex: number) {
     if (!this.answerWord.isCorrect) {
       this.containerOn = true;
-      this.focusAndCheckComplete(toIndex);
+      this.focusRestore(toIndex);
+      this.wordIsCompleteCheck();
+      this.letterToCorrectablePart();
       if (!this.init) {
         this.soundService.playSoundEffect('sounds/selectedInput.mp3', ScreenTypeOx.Game)
       }
@@ -247,64 +241,57 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   public updateFocusPart2(toIndex: number) {
-    if (toIndex !== this.wordInputArray.length &&
-      !this.answerWord.isComplete) {
+    const answerComplete = this.firstHalfAnswer.concat(this.secondHalfAnswer);
+    if (toIndex !== this.wordInputArray.length || answerComplete[toIndex].txt !== "") {
       const squareToFocus = this.wordInputArray.slice(toIndex + 1);
       const adjustVariable = squareToFocus.findIndex(z => z.nativeElement.value === '');
-      this.letterToCorrectablePart();
-      console.log(this.letterToCorrectablePart());
       if (adjustVariable !== -1 && this.wordInputArray[toIndex].nativeElement.value !== '´') {
         const indexToFocus = this.wordInputArray.length - squareToFocus.length + adjustVariable;
-        this.focusAndCheckComplete(indexToFocus);
+        this.focusRestore(indexToFocus);
       } else {
-        this.focusAndCheckComplete(toIndex);
+        this.focusRestore(toIndex);
       }
     }
   }
 
 
 
-  private focusAndCheckComplete(i: number) {
-    this.wordIsCompleteCheck();
-    this.wordOxTextArray.forEach(word => word.element.nativeElement.style.backgroundColor = "#FFFFFF")
+
+
+  private focusRestore(i: number) {
+    this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text, isComplete: this.answerWord.isComplete });
+    const fixedHints = this.firstHalfAnswer.map(letter => letter.fixed).concat(this.secondHalfAnswer.map(letter => letter.fixed))
+    this.wordOxTextArray.forEach((word, t) => {
+      if (!fixedHints[t]) {
+        word.element.nativeElement.style.backgroundColor = "#FFFFFF"
+      }
+    })
     this.wordOxTextArray[i].element.nativeElement.style.backgroundColor = '#FAFA33';
     this.wordInputArray[i].nativeElement.focus();
-    this.hintService.checkHintAvailable();
-    this.challengeService.wordHasBeenSelected.emit({ id: this.answerWord.id, definition: this.answerWord.description.text, isComplete: this.answerWord.isComplete });
   }
 
 
-  private setAnswer(): void {
+
+
+  public letterToCorrectablePart(): void {
+    const concatInputAnswer = duplicateWithJSON(this.answerWordArray);
+    concatInputAnswer.splice(this.firstHalfAnswer.length, 1);
+    const correctablePart = concatInputAnswer.map((word, i) => {
+      return {
+        correctness: word === this.wordInputArray[i].nativeElement.value ? 'correct' : 'wrong',
+        parts: [
+          {
+            format: 'word-text' as PartFormat,
+            value: this.wordInputArray[i].nativeElement.value as string
+          }]
+      }
+    })
     this.answerService.currentAnswer = {
-      parts: [
-        {
-          correctness: 'correct',
-          parts: [
-            {
-              format: 'word-text',
-              value: 'a'
-            }
-          ]
-        }
-      ]
+      parts: correctablePart as CorrectablePart[]
     }
   }
 
 
-  private letterToCorrectablePart(): CorrectablePart[] {
-    const concatInputAnswer = duplicateWithJSON(this.answerWordArray);
-    concatInputAnswer.splice(this.firstHalfAnswer.length,1);
-    return concatInputAnswer.map((word,i) => {
-      return {    
-          correctness: word === this.wordInputArray[i].nativeElement.value ? 'correct' : 'wrong',
-          parts:[
-            {
-              format:'word-text' as PartFormat,
-              value: this.wordInputArray[i].nativeElement.value as string
-            }]
-      }  
-    }) 
-  }
 
 
 
@@ -313,53 +300,48 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     const inputIsAvaiable = this.alphabetArray.find(z => z === event.data);
     if (inputIsAvaiable) {
       if (stringArray[i].txt !== '' && stringArray[i].txt !== '´') {
-        stringArray[i].txt = event.data as string;
-        this.adjustFirstSecondHalf(i, stringArray, () => this.updateFocusPart2(i))
+        stringArray[i].txt = '';
         this.soundService.playSoundEffect('sounds/keypressOk.mp3', ScreenTypeOx.Game)
       }
     }
     else if (event.data === null) {
-      this.adjustFirstSecondHalf(i, stringArray, () => this.erraseLetter(i, stringArray, event))
-      this.adjustFocus(i, stringArray);
-      this.letterToCorrectablePart();
-      console.log(this.letterToCorrectablePart())
-    } else {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  }
-
-
-
-
-  private adjustFirstSecondHalf(i: number, stringArray: WordText[], actions: (i: number) => void) {
-    if (stringArray === this.secondHalfAnswer) {
-      actions(i + this.beforeFirstHalfQuantity.length)
-    } else {
-      actions(i);
-    }
-  }
-
-
-
-  private adjustFocus(i: number, stringArray: WordText[]) {
-    if (stringArray === this.secondHalfAnswer) {
-      this.focusAndCheckComplete(i + this.beforeFirstHalfQuantity.length)
-    } else {
-      this.focusAndCheckComplete(i);
-    }
-  }
-
-
-
-  private erraseLetter(i: number, stringArray: WordText[], event: InputEvent) {
-    if (!stringArray[i].fixed) {
       stringArray[i].txt = '';
     } else {
       event.stopPropagation();
       event.preventDefault();
     }
   }
+
+
+
+
+  // private adjustFirstSecondHalf(i: number, stringArray: WordText[], actions: (i: number) => void) {
+  //   if (stringArray === this.secondHalfAnswer) {
+  //     actions(i + this.beforeFirstHalfQuantity.length)
+  //   } else {
+  //     actions(i);
+  //   }
+  // }
+
+
+
+  // private adjustFocus(i: number, stringArray: WordText[]) {
+  //   if (stringArray === this.secondHalfAnswer) {
+  //     this.focusAndCheckComplete(i + this.beforeFirstHalfQuantity.length)
+  //   } else {
+  //     this.focusAndCheckComplete(i);
+  //   }
+  // }
+
+
+
+
+
+  // public erraseLetter(i: number, stringArray: WordText[]) {
+  //   if (!stringArray[i].fixed) {
+  //     this.adjustFocus(i, stringArray);
+  //    } 
+  // }
 
 
   //CAMBIAR CHANGING RULES
@@ -381,7 +363,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     const keyframes = [{
       scale: '1.08',
       translateY: '-1.5vh',
-      translateX: '-0.6vh',
+      translateX: '-0.5vh',
       easing: 'easeOutExpo'
     },
       restoreAnimation
@@ -445,8 +427,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       easing: 'easeInOutQuad'
     })
     anime({
-      targets: this.wordOxTextArray[indexToAnimate].textInfo,
-      color: ['#FFF', '#f28100'],
+      targets: this.wordOxTextArray[indexToAnimate].element.nativeElement,
+      backgroundColor: ['#FFF', '#0FFF50'],
       duration: 1500,
       easing: 'linear',
       complete: () => {
@@ -463,6 +445,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   findIndexForAnimation(array: WordText[]): number | undefined {
     return array.findIndex(a => a.isHint) === -1 ? undefined : array.findIndex(letter => letter.isHint)
   }
+
 
 
 }
