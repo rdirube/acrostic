@@ -17,6 +17,7 @@ import {
 import { PostMessageBridgeFactory } from 'ngox-post-message';
 import { CommunicationOxService, I18nService, PreloaderOxService, ResourceOx, ResourceType } from 'ox-core';
 import { ResourceFinalStateOxBridge, ScreenTypeOx } from 'ox-types';
+import { timer } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AcrosticChallengeService } from './shared/services/acrostic-challenge.service';
 
@@ -57,13 +58,20 @@ export class AppComponent extends BaseMicroLessonApp {
       }
     });
     preloader.addResourcesToLoad(this.getGameResourcesToLoad());
-    preloader.loadAll().subscribe( z => this.loaded = true);
+    console.log('App component instanciated', this);
+    // preloader.loadAll().subscribe( z => {
+    //   console.log('Everything is loaded, vale of loaded', this);
+    //   timer(3000).subscribe(z => {
+    //     this.loaded = true
+    //     console.log('Loaded set to ttrue', this.loaded);
+    //   });
+    // });
     this.sound.setSoundOn(true);
   }
 
 
   protected getGameResourcesToLoad(): ResourceOx[] {
-    const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg'];
+    const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg', 'sonido-activado.svg'];
 
     const gameResources: string[] = ['background.svg', 'boat-with-water.svg', 'container-blue.svg', 'container-green.svg', 'container-orange.svg',
       'container-red.svg', 'header-background-18.svg', 'indicator.svg'];

@@ -2,14 +2,14 @@
 <div div *ngFor="let space of spaceToAddLeft" class="div-container" fxLayoutAlign="center center">
 </div> 
 <div class="div-container" [ngStyle]="{'filter': containerOn ? 'grayscale(0)' : 'grayscale(2)'}">
-    <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/indicator.svg" style="width:10vh;"></mlc-loaded-svg>
-    <ox-text [originalText]="answerWord.id + ''" fontSize="4.5vh" color="white" font="dinnRegular" style="position: absolute; transform: translate(0vh, 2vh);"></ox-text>
+    <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/indicator.svg" style="width:10vh;transform: translateX(1.25vh);"></mlc-loaded-svg>
+    <ox-text [originalText]="answerWord.id + ''" fontSize="4.5vh" color="white" font="dinnRegular" style="position: absolute; transform: translate(1.25vh, 2vh);"></ox-text>
 </div>
  <div *ngFor="let word of beforeFirstHalfQuantity; let i = index" class="div-container" fxLayoutAlign="center center">
      <mlc-loaded-svg #squareImage0 [ngStyle]="{'filter': containerOn ? 'grayscale(0)' : 'grayscale(2)'}" [ngClass]="answerLargerThan6 ? 'letter-container-small': 'letter-container'" path="mini-lessons/executive-functions/acrostic/volcan/svg/container-orange.svg"></mlc-loaded-svg>
      <input #wordInput  
      (keyup)="letterToCorrectablePart()"
-     (beforeinput)="write($event,i, firstHalfAnswer)"
+     (beforeinput)="   write($event,i, firstHalfAnswer)"
      (input)="updateFocusPart2(i)" 
      [(ngModel)]="firstHalfAnswer[i].txt" type="text" 
        style="width: 1px;height: 1px;" maxlength="1">

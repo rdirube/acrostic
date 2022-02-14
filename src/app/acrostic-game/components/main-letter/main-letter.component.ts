@@ -2,7 +2,7 @@ import { CompileTemplateMetadata, isLoweredSymbol } from '@angular/compiler';
 import { Component, ElementRef, Input, OnInit, ViewChild, AfterViewInit, ViewChildren, QueryList, ChangeDetectorRef, EventEmitter, Output, HostListener } from '@angular/core';
 import { LoadedSvgComponent, SubscriberOxDirective } from 'micro-lesson-components';
 import { HorizontalWord, HorizontalWordText, WordAnswer, WordPosition, WordSelectedEmitValues, WordText } from 'src/app/shared/types/types';
-import { AnswerService, SoundOxService, GameActionsService } from 'micro-lesson-core';
+import { AnswerService, SoundOxService, GameActionsService, FeedbackOxService } from 'micro-lesson-core';
 import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.service';
 import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-challenge.service';
 import { AcrosticHintService } from 'src/app/shared/services/acrostic-hint.service';
@@ -72,20 +72,20 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   public secondHalfAnswer!: WordText[];
   private currentIdParsed: number = parseFloat(this.currentId);
   public alphabetArray: string[] = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMÑOPQRSTUVWXYZáéóíúÁÉÍÚÓ´".split('');
+  public completeWordText!: WordText[];
   // 
 
 
 
   constructor(private answerService: AnswerService, private cdr: ChangeDetectorRef, private challengeService: AcrosticChallengeService
-    , private soundService: SoundOxService, public gameActions: GameActionsService<any>, public elementRef: ElementRef, private hintService: HintService) {
+    , private soundService: SoundOxService,
+    private feedbackService: FeedbackOxService, 
+    public gameActions: GameActionsService<any>, public elementRef: ElementRef, private hintService: HintService) {
     super();
-    this.addSubscription(this.answerService.tryAnswer, x => {
+
+    this.addSubscription(this.gameActions.checkedAnswer, x => {
       if (this.containerOn && !this.answerWord.isCorrect) {
-        if (this.answerWord.isComplete) {
           this.answerCorrection()
-        } else {
-          this.soundService.playSoundEffect('sounds/cantClick.mp3', ScreenTypeOx.Game);
-        }
       }
     })
     this.containerOn = false;
@@ -98,11 +98,13 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.answerWordArray = this.answerWord.word.text.split('');
     this.beforeFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainLetter, true);
     this.afterFirstHalfQuantity = this.answerWordPositionCalculator(this.answerWordArray, this.mainLetter, false);
-    this.spaceToAddLeft = Array.from({ length: 5 - this.beforeFirstHalfQuantity.length }, (v, i) => i);
-    this.spaceToAddRight = Array.from({ length: 5 - this.afterFirstHalfQuantity.length }, (v, i) => i);
+    this.spaceToAddLeft = Array.from({ length: 6 - this.beforeFirstHalfQuantity.length }, (v, i) => i);
+    this.spaceToAddRight = Array.from({ length: 6 - this.afterFirstHalfQuantity.length }, (v, i) => i);
     this.firstHalfAnswer = Array.from({ length: this.beforeFirstHalfQuantity.length }, x => { return { txt: '', isHint: false, fixed: false } });
     this.secondHalfAnswer = Array.from({ length: this.afterFirstHalfQuantity.length }, x => { return { txt: '', isHint: false, fixed: false } });
+    this.completeWordText = this.firstHalfAnswer.concat(this.secondHalfAnswer);
   }
+
 
 
 
@@ -174,9 +176,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   private answerIsCorrect(arr1: string[], arr2: string[]): void {
     if (equalArrays(arr1, arr2)) {
-      this.correctAnswerAnimation();
-      this.answerWord.isCorrect = true;
-      this.answerWord.isComplete = false;
+      this.correctAnswerAnimation(() => this.feedbackService.endFeedback.emit());
     } else {
       this.wrongAnswerAnimation();
     }
@@ -216,7 +216,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   public updateFocus(toIndex: number) {
-    if (!this.answerWord.isCorrect) {
+    if (!this.answerWord.isCorrect && !this.completeWordText[toIndex].fixed) {
       this.focusRestore(toIndex);
       this.containerOn = true;
       this.letterToCorrectablePart();
@@ -233,8 +233,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   public updateFocusPart2(toIndex: number) {
     this.soundService.playSoundEffect('sounds/keypressOk.mp3', ScreenTypeOx.Game)
-    const answerComplete = this.firstHalfAnswer.concat(this.secondHalfAnswer);
-    if (toIndex !== this.wordInputArray.length || answerComplete[toIndex].txt !== "") {
+    if (toIndex !== this.wordInputArray.length || this.completeWordText[toIndex].txt !== "") {
       const squareToFocus = this.wordInputArray.slice(toIndex + 1);
       const adjustVariable = squareToFocus.findIndex(z => z.nativeElement.value === '');
       if (adjustVariable !== -1 && this.wordInputArray[toIndex].nativeElement.value !== '´') {
@@ -252,7 +251,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   private focusRestore(i: number) {
     this.challengeService.wordHasBeenSelected.emit(this.answerWord);
-    const fixedHints = this.firstHalfAnswer.map(letter => letter.fixed).concat(this.secondHalfAnswer.map(letter => letter.fixed))
+    const fixedHints = this.completeWordText.map(letter => letter.fixed);
     this.wordOxTextArray.forEach((word, t) => {
       if (!fixedHints[t]) {
         word.element.nativeElement.style.backgroundColor = "#FFFFFF"
@@ -318,8 +317,10 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   //CAMBIAR CHANGING RULES
 
-  correctAnswerAnimation() {
+  correctAnswerAnimation(gameAction: () => void) {
     this.soundService.playSoundEffect('sounds/rightAnswer.mp3', ScreenTypeOx.Game);
+    this.answerWord.isCorrect = true
+    this.answerWord.isComplete = false
     const restoreAnimation = {
       scale: '1',
       translateY: '0vh',
@@ -349,7 +350,10 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     anime({
       targets: [this.squareImage0.map(square => square.elementRef.nativeElement), this.squareImage2.map(square => square.elementRef.nativeElement)],
       delay: anime.stagger(150, { start: 300 }),
-      keyframesSquare
+      keyframesSquare,
+      complete: () => {
+      gameAction(); 
+      }
     })
   }
 
@@ -382,6 +386,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         easing: 'linear',
         complete: () => {
           this.selectInputAfterAnimation()
+          this.feedbackService.endFeedback.emit()
         }
       })
   }
@@ -389,7 +394,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
   private selectInputAfterAnimation():void {
     const indexToFocus = this.wordOxTextArray.findIndex(oxText => oxText.element.nativeElement.style.backgroundColor === 'rgb(250, 250, 51)');
-    this.wordInputArray[indexToFocus].nativeElement.focus();
+    if(indexToFocus !== -1) {
+      this.wordInputArray[indexToFocus].nativeElement.focus();
+    }
   }
 
 

@@ -3,7 +3,7 @@
     <mlc-to-in-game-menu-button [forceNoAnimations]="true"
       style="width: 13vh;" svgPath="mini-lessons/executive-functions/buttons/menu.svg">
     </mlc-to-in-game-menu-button>
-    <div fxLayoutAlign="center end" style="transform: translateY(4vh);">
+    <div fxLayoutAlign="center end" style="transform: translateY(5vh);width: 80%;">
       <div fxLayoutAlign="center center" class="indicator-container" style="transform: translateY(-18vh);">
         <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/indicator.svg"
           style="height:14.8vh;width: 12vh; transform: translate(1vh,-1.15vh);"></mlc-loaded-svg>
@@ -13,8 +13,11 @@
       <div fxLayoutAlign="center center" class="explanation-container" style="transform: translateY(-18vh);">
         <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/header-background-18.svg"
           style="width: 89vh;"></mlc-loaded-svg>
-        <ox-text style="position: absolute;width:80vh" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
+        <ox-text style="position: absolute;width:80vh; transform: translateX(-7vh);" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
           font="dinnRegular"></ox-text>
+          <mlc-sound-button svgPath="mini-lessons/executive-functions/buttons/sonido-activado.svg"
+          style="width: 9.5vh;transform: translateX(0.5vh);cursor: pointer;" (click)="playLoadedSound(exercise.verticalWord.audio)" >
+          </mlc-sound-button>
       </div>
     </div>
     <mlc-hint-button   style="width: 13vh; opacity: 1;"
@@ -41,9 +44,10 @@
     </div>
     <div class="elements-container" fxLayoutAlign="center center" style="height: 10.5vh;">
       <mlc-footer class="button-menu" style=" width: 97.5%; height: 12vh;" 
-      (click)="tryAnswer()"
-      trySvg="mini-lessons/executive-functions/buttons/check.svg" nextSvg="mini-lessons/executive-functions/buttons/next-memotest.svg"
-      surrenderSvg="mini-lessons/executive-functions/buttons/surrender.svg" resultsSvg="mini-lessons/executive-functions/buttons/copa-memotest.svg"
+      trySvg="mini-lessons/executive-functions/buttons/check.svg" 
+      [forceNoNextButton]="true"
+      surrenderSvg="mini-lessons/executive-functions/buttons/surrender.svg" 
+      resultsSvg="mini-lessons/executive-functions/buttons/copa-memotest.svg"
       ></mlc-footer>
     </div>
   </div>
