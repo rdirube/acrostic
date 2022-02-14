@@ -68,14 +68,17 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     private soundService: SoundOxService,
     private feedbackService: FeedbackOxService,
     private answerService: AcrosticAnswerService,
-    private AcrosticHintService:AcrosticHintService) {
+    ) {
     super()
     this.hintService.usesPerChallenge = 0;
     this.addSubscription(this.challengeService.wordHasBeenSelected, info => {
       this.currentWordId = info.id + '';
-      this.currentWordDefinition = info.definition;
-      this.hintService.usesPerChallenge = this.hintQuantity[info.id - 1].quantity + this.hintService.currentUses
-      this.hintAvaible = (this.hintQuantity[info.id - 1].quantity === 0 || info.isComplete) ? false : true
+      this.currentWordDefinition = info.description.text;
+      this.hintService.usesPerChallenge  =  this.hintQuantity[info.id - 1].quantity + this.hintService.currentUses;
+      this.hintService.checkHintAvailable();
+      // uses perhintService challenge da undefined
+      console.log(this.hintService.currentUses);
+      console.log(this.hintService.usesPerChallenge);
     })
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
       (exercise: ExerciseOx<AcrosticExercise>) => {
@@ -91,7 +94,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
             state: false
           });
           this.hintQuantity.push({
-            quantity: exercise.exerciseData.hintQuantity
+            quantity: +exercise.exerciseData.hintQuantity
           })
         }
         );

@@ -9,7 +9,7 @@ import {
 } from 'micro-lesson-core';
 import { ExerciseOx, PreloaderOxService } from 'ox-core';
 import { ExpandableInfo } from 'ox-types';
-import { AcrosticExercise, HorizontalWordText, WordSelectedEmitValues } from '../types/types';
+import { AcrosticExercise, HorizontalWordText, WordAnswer, WordSelectedEmitValues } from '../types/types';
 import { AcrosticNivelation } from '../types/types';
 
 
@@ -20,7 +20,7 @@ import { AcrosticNivelation } from '../types/types';
 
 export class AcrosticChallengeService extends ChallengeService<any, any> {
 
-  wordHasBeenSelected = new EventEmitter<WordSelectedEmitValues>()
+  wordHasBeenSelected = new EventEmitter<WordAnswer>()
   public exerciseConfig!: AcrosticNivelation;
 
 

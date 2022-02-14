@@ -8,7 +8,6 @@ export class AcrosticHintService {
 
   hintsAvaiable = new EventEmitter<{index:number,isComplete:boolean}>();
 
-
   constructor() {
    
    }
