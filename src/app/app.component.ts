@@ -59,13 +59,6 @@ export class AppComponent extends BaseMicroLessonApp {
     });
     preloader.addResourcesToLoad(this.getGameResourcesToLoad());
     console.log('App component instanciated', this);
-    // preloader.loadAll().subscribe( z => {
-    //   console.log('Everything is loaded, vale of loaded', this);
-    //   timer(3000).subscribe(z => {
-    //     this.loaded = true
-    //     console.log('Loaded set to ttrue', this.loaded);
-    //   });
-    // });
     this.sound.setSoundOn(true);
   }
 
@@ -78,22 +71,11 @@ export class AppComponent extends BaseMicroLessonApp {
 
     const sounds = ['click.mp3', 'bubble01.mp3', 'bubble02.mp3', 'rightAnswer.mp3', 'woosh.mp3', 'wrongAnswer.mp3', 'clickSurrender.mp3', 'cantClick.mp3', 'keypressOk.mp3', 'selectedInput.mp3', 'hint.mp3'].map(z => 'sounds/' + z);
     // 
-    return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/buttons/' + x, ResourceType.Svg,
+    return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/buttons/' + x, ResourceType.Svg,
       [ScreenTypeOx.Game], true)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/volcan/svg/' + x, ResourceType.Svg,
         [ScreenTypeOx.Game], true)))
       .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, true));
   }
-
-//   return svgElementos.map(x => new ResourceOx('changing_rules/svg/elementos/' + x, ResourceType.Svg,
-//   [ScreenTypeOx.Game], true))
-// .concat(svgIndications.map(x => new ResourceOx('changing_rules/svg/indicación/' + x, ResourceType.Svg,
-//   [ScreenTypeOx.Game], true)))
-// .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false))
-// .concat(getResourceArrayFromUrlList(figuresSvg, ResourceType.Svg, false))
-// .concat(getResourceArrayFromUrlList(['mini-lessons/executive-functions/svg/buttons/Home.svg',
-//   'mini-lessons/executive-functions/svg/buttons/Hint.svg',
-//   'mini-lessons/executive-functions/svg/buttons/saltear.svg'], ResourceType.Svg, false));
-
 }
 
 
