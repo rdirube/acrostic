@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChildren, AfterViewInit, QueryList, ViewChild, ElementRef } from '@angular/core';
 import {
+  EndGameService,
   FeedbackOxService,
   GameActionsService,
   HintService,
@@ -40,6 +41,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   public countDownImageInfo: OxImageInfo | undefined;
   public exercise!: AcrosticExercise;
   public hintAvaible!: boolean;
+  public currentDescriptionAudio:string = "";
   public hintInfo: HintInfo = {
     index: 0,
     isComplete: false
@@ -53,11 +55,13 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   public correctionWithAccent!: boolean;
   public answerLargerThan6!: boolean;
   public init: boolean = true;
+  
   constructor(private challengeService: AcrosticChallengeService,
     private metricsService: MicroLessonMetricsService<any>,
     private gameActions: GameActionsService<any>,
     private hintService: HintService,
     private soundService: SoundOxService,
+    private endService: EndGameService,
     private feedbackService: FeedbackOxService,
     private answerService: AcrosticAnswerService,
   ) {
@@ -67,39 +71,44 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     this.addSubscription(this.feedbackService.endFeedback.pipe(withLatestFrom(this.gameActions.checkedAnswer)), params => {
       if (params[1].correctness === 'correct') {
         console.log('Sending show next challange')
-        timer(100).subscribe(z => this.gameActions.showNextChallenge.emit());
+        timer(100).subscribe(z => {
+          if (!endService.gameIsEnded())
+            this.gameActions.showNextChallenge.emit();
+        });
       }
     });
     this.addSubscription(this.challengeService.wordHasBeenSelected, info => {
       this.currentWordId = info.id + '';
       this.currentWordDefinition = info.description.text;
+      this.currentDescriptionAudio = info.description.audio;
       this.hintService.usesPerChallenge = this.hintQuantity[info.id - 1].quantity + this.hintService.currentUses;
       this.hintService.checkHintAvailable();
     })
     this.addSubscription(this.gameActions.surrender, surr => {
       this.surrender();
     })
+    this.hintService.checkValueOnShowNextChallenge = false;
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
       (exercise: ExerciseOx<AcrosticExercise>) => {
-        console.log(this);
         if (this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number > 0) {
+          // this.restartAnimation();
+          // this.hintService.hintAvailable.next(false);
           return;
         }
         console.log('OTRO EJERCICIOS  ');
         this.addMetric();
-        
-
         this.exercise = exercise.exerciseData;
         this.exerciseWord = exercise.exerciseData.verticalWord.text;
         this.exerciseWordArray = this.exerciseWord.split('');
         this.horizontalWordGenerator();
         this.hintService.usesPerChallenge = exercise.exerciseData.hintQuantity;
+        this.hintQuantity = [];
         this.exerciseWordArray.forEach((word, i) => {
-          this.componentsInit.push({
-            state: false
-          });
           this.hintQuantity.push({
             quantity: +exercise.exerciseData.hintQuantity
+          })
+          this.componentsInit.push({
+            state:false
           })
         }
         );
@@ -107,11 +116,38 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         this.currentWordId = 1 + '';
         this.currentWordDefinition = this.horizontalWords[0].description.text;
         this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;
+        this.mainLetterComponent.forEach(comp => {
+         comp.answerWord.isComplete = false;
+         comp.answerWord.isCorrect = false;
+         comp.firstHalfAnswer.forEach(word => {
+           word.txt = '';
+           word.fixed = false;
+           word.isHint = false;
+          })
+          comp.secondHalfAnswer.forEach(word => {
+            word.txt = '';
+            word.fixed = false;
+            word.isHint = false;
+           })
+           comp.wordOxTextArray.forEach(oxText => {
+             oxText.element.nativeElement.style.backgroundColor = '#FFFFFF';
+           })
+        })
+        this.restoreDomElements();
         this.startGame();
+        this.mainLetterComponentArray = this.mainLetterComponent.toArray();
       });
     this.addSubscription(this.gameActions.showHint, x => {
       this.showHint();
     })
+    // this.addSubscription(this.challengeService.nextWordSelection, id => {
+    //   if(id) {
+    //     this.mainLetterComponentArray[id].containerOn = true;
+    //     const inputToSelect = this.mainLetterComponentArray[id].firstHalfAnswer.concat(this.mainLetterComponentArray[id].secondHalfAnswer).findIndex((letter: { txt: string; }) => letter.txt === '');
+    //     this.mainLetterComponentArray[id].updateFocus(inputToSelect);
+    //   } 
+    // })
+    // this.addSubscription()
   }
 
 
@@ -129,55 +165,44 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   startGame() {
     anime({
       targets: '.button-menu',
-      duration: 1200,
-      keyframes: [{
-        translateY: '0',
-      }, {
-        translateY: '-14vh',
-        easing: 'easeInOutExpo'
-      }
-      ],
+      duration: 1000,
+      easing: 'easeInOutExpo',
+      translateY: ['0', '-14vh'],
       complete: () => anime({
         targets: this.mainLetterComponent.map(comp => comp.elementRef.nativeElement),
         delay: anime.stagger(250),
         scale: [0, 1],
         begin: () => anime({
           targets: ['.indicator-container', '.explanation-container'],
-          delay: 250 * (this.exerciseWordArray.length - 3),
-          duration: 1700,
-          keyframes: [{
-            translateY: '-18vh',
-          },
-          {
-            translateY: '0vh',
-          }
-          ]
+          delay: 250 * (this.exerciseWordArray.length + 1),
+          duration: 1000,
+          translateY: ['-18vh', '0']
         })
       })
     });
+  }
+
+
+
+
+  restoreDomElements() {
     anime({
-      targets: '.button-hint',
-      duration: 1200,
-      keyframes: [{
-        translateX: '13vh',
-      }, {
-        translateX: '0vh',
-        easing: 'easeInOutExpo'
-      }
-      ]
-    })
+      targets: '.button-menu',
+      duration: 0,
+      translateY: ['-14vh', '0'],
+    });
     anime({
-      targets: ['.game-element', '.disable-element'],
-      duration: 1200,
-      keyframes: [{
-        translateY: '0vh',
-      }, {
-        translateY: '-16vh',
-        easing: 'easeInOutExpo'
-      }
-      ]
+      targets: this.mainLetterComponent.map(comp => comp.elementRef.nativeElement),
+      duration: 0,
+      scale: [1, 0]
+    });
+    anime({
+      targets: ['.indicator-container', '.explanation-container'],
+      duration: 0,
+      translateY: [ '0vh', '-18vh']
     })
   }
+
 
 
 
@@ -189,13 +214,12 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
   public mainLetterCompToArray() {
     if (this.componentsInit.every(comp => comp.state)) {
-      this.mainLetterComponentArray = this.mainLetterComponent.toArray();
     }
   }
 
 
 
-  public playLoadedSound(sound:string) {
+  public playLoadedSound(sound: string) {
     this.soundService.playSoundEffect(sound, ScreenTypeOx.Game);
   }
 
@@ -218,7 +242,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
   public showHint() {
     const selectedWord = this.mainLetterComponent.find(word => word.containerOn && !word.answerWord.isCorrect);
-    const wordIndex = this.exercise.horizontalWord.word.findIndex(word => word === selectedWord?.answerWord.word);
+    const wordIndex = this.exercise.horizontalWord.word.findIndex(word => word.text === selectedWord?.answerWord.word.text);
     const wordOptionsArray = selectedWord?.firstHalfAnswer.concat(selectedWord.secondHalfAnswer) as WordText[];
     const wordAnswerArrayDuplicate = duplicateWithJSON(selectedWord?.answerWordArray);
     (wordAnswerArrayDuplicate as string[]).splice((selectedWord as any).firstHalfAnswer.length, 1) as string[];
@@ -245,9 +269,9 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     const selectedWord = this.mainLetterComponent.find(word => word.containerOn && !word.answerWord.isCorrect);
     const firstPartAns = selectedWord?.answerWordArray.slice(0, selectedWord.firstHalfAnswer.length);
     const secondPartAns = selectedWord?.answerWordArray.slice(selectedWord.firstHalfAnswer.length + 1, selectedWord.answerWordArray.length);
-    selectedWord?.firstHalfAnswer.map((letter,i) => letter.txt = (firstPartAns as string[])[i]);
-    selectedWord?.secondHalfAnswer.map((letter,i) => letter.txt = (secondPartAns as string[])[i]);
-    selectedWord?.correctAnswerAnimation(()=> this.feedbackService.surrenderEnd.emit());
+    selectedWord?.firstHalfAnswer.map((letter, i) => letter.txt = (firstPartAns as string[])[i]);
+    selectedWord?.secondHalfAnswer.map((letter, i) => letter.txt = (secondPartAns as string[])[i]);
+    selectedWord?.correctAnswerAnimation(() => this.feedbackService.surrenderEnd.emit());
   }
 
 
@@ -286,6 +310,6 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         console.log('Finish time');
       });
     this.metricsService.addMetric(myMetric as ExerciseData);
-    this.metricsService.currentMetrics.exercises++;
+    // this.metricsService.currentMetrics.exercises++;
   }
 }

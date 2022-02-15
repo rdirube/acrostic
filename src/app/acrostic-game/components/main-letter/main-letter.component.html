@@ -26,6 +26,9 @@
         type="text"  maxlength="1">
         <ox-text #wordOxText  [originalText]="secondHalfAnswer[i].txt" (click)="updateFocus(i + beforeFirstHalfQuantity.length)" [ngClass]="answerLargerThan6 ? 'ox-text-small': 'ox-text'" fontSize="4.5vh" color="black" font="dinnRegular"></ox-text>
 </div>
+<mlc-sound-button svgPath="mini-lessons/executive-functions/buttons/sonido-activado.svg"
+style="width: 9.5vh;transform: translateX(0.5vh);cursor: pointer;" (click)="playLoadedSound(answerWord.word.audio)" [ngStyle]="{'visibility': answerWord.word.audio !==  '' ?  'visible' : 'collapse'}">
+</mlc-sound-button>
 <div div *ngFor="let space of spaceToAddRight" class="div-container" fxLayoutAlign="center center">
 </div> 
 

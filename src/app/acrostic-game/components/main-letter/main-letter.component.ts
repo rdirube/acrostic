@@ -60,6 +60,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   @Input() hintQuantity!: {
     quantity: number
   }
+  
   public answerWordArray!: string[];
   public beforeFirstHalfQuantity!: string[];
   public afterFirstHalfQuantity!: string[];
@@ -85,10 +86,12 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
     this.addSubscription(this.gameActions.checkedAnswer, x => {
       if (this.containerOn && !this.answerWord.isCorrect) {
-          this.answerCorrection()
+          this.answerCorrection();
+          
       }
     })
     this.containerOn = false;
+  
   }
 
 
@@ -103,6 +106,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     this.firstHalfAnswer = Array.from({ length: this.beforeFirstHalfQuantity.length }, x => { return { txt: '', isHint: false, fixed: false } });
     this.secondHalfAnswer = Array.from({ length: this.afterFirstHalfQuantity.length }, x => { return { txt: '', isHint: false, fixed: false } });
     this.completeWordText = this.firstHalfAnswer.concat(this.secondHalfAnswer);
+    
   }
 
 
@@ -216,7 +220,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   public updateFocus(toIndex: number) {
-    if (!this.answerWord.isCorrect && !this.completeWordText[toIndex].fixed) {
+    if (!this.answerWord.isCorrect && !this.completeWordText[toIndex].fixed && !this.challengeService.animationRunning) {
       this.focusRestore(toIndex);
       this.containerOn = true;
       this.letterToCorrectablePart();
@@ -267,6 +271,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   }
 
 
+  public playLoadedSound(sound: string) {
+    this.soundService.playSoundEffect(sound, ScreenTypeOx.Game);
+  }
 
 
   public letterToCorrectablePart(): void {
@@ -289,9 +296,9 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
     this.wordIsCompleteCheck();
     this.challengeService.wordHasBeenSelected.emit(this.answerWord);
-
   }
 
+  
 
 
 
@@ -318,6 +325,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   //CAMBIAR CHANGING RULES
 
   correctAnswerAnimation(gameAction: () => void) {
+    this.challengeService.animationRunning = true;
     this.soundService.playSoundEffect('sounds/rightAnswer.mp3', ScreenTypeOx.Game);
     this.answerWord.isCorrect = true
     this.answerWord.isComplete = false
@@ -353,6 +361,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       keyframesSquare,
       complete: () => {
       gameAction(); 
+      this.challengeService.animationRunning = false;
+      this.challengeService.nextWordSelection.emit(this.answerWord.id)
       }
     })
   }
@@ -367,6 +377,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   wrongAnswerAnimation() {
+    this.challengeService.animationRunning = true;
     this.soundService.playSoundEffect('sounds/wrongAnswer.mp3', ScreenTypeOx.Game)
     const rotate = Array.from(Array(8).keys()).map((z, i) => {
       return { value: isEven(i) ? 2 : -2, duration: 50 };
@@ -386,7 +397,8 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         easing: 'linear',
         complete: () => {
           this.selectInputAfterAnimation()
-          this.feedbackService.endFeedback.emit()
+          this.feedbackService.endFeedback.emit();
+          this.challengeService.animationRunning = false;
         }
       })
   }
@@ -402,6 +414,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   public hintAppearence() {
+    this.challengeService.animationRunning = true;
     this.soundService.playSoundEffect('sounds/hint.mp3', ScreenTypeOx.Game)
     const translateX = Array.from(Array(7).keys()).map((z, i) => {
       return { value: isEven(i) ? -6 : -2, duration: 200 };
@@ -425,6 +438,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         this.secondHalfAnswer.forEach(letter => letter.isHint = false);
         this.letterToCorrectablePart();
         this.selectInputAfterAnimation();
+        this.challengeService.animationRunning = false;
       }
     })
 

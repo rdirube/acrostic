@@ -21,8 +21,10 @@ import { AcrosticNivelation } from '../types/types';
 export class AcrosticChallengeService extends ChallengeService<any, any> {
 
   wordHasBeenSelected = new EventEmitter<WordAnswer>()
-  public exerciseConfig!: AcrosticNivelation;
+  nextWordSelection = new EventEmitter<number>()
 
+  public exerciseConfig!: AcrosticNivelation;
+  public animationRunning: boolean = false;
 
   protected generateNextChallenge(subLevel: number): ExerciseOx<AcrosticExercise> {
     const horizontalWordText:HorizontalWordText[] = [];
