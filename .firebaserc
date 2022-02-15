@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "ml-creators"
+  },
+  "targets": {
+    "ml-creators": {
+      "hosting": {
+        "acrostic": [
+          "acrostic"
+        ]
+      }
+    }
+  }
+}
