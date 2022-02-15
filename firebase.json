@@ -1,0 +1,8 @@
+{
+  "hosting": [
+    {
+      "target": "acrostic",
+      "public": "dist/acrostic"
+    }
+  ]
+}
