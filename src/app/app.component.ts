@@ -75,7 +75,7 @@ export class AppComponent extends BaseMicroLessonApp {
     return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/buttons/' + x, ResourceType.Svg,
       [ScreenTypeOx.Game], false)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/volcan/svg/' + x, ResourceType.Svg,
         [ScreenTypeOx.Game], false)))
-      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false)).concat(localSounds.map(x => new ResourceOx('local-sounds/' + x, ResourceType.Audio,[ScreenTypeOx.Game] ,true)));
+      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false)).concat(localSounds.map(x => new ResourceOx('acrostic/local-sounds/' + x, ResourceType.Audio,[ScreenTypeOx.Game] ,true)));
   }
 }
 

@@ -225,7 +225,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       this.containerOn = true;
       this.letterToCorrectablePart();
       if (!this.init) {
-        this.soundService.playSoundEffect('local-sounds/selectedInput.mp3', ScreenTypeOx.Game)
+        this.soundService.playSoundEffect('acrostic/local-sounds/selectedInput.mp3', ScreenTypeOx.Game)
       }
     } else {
       this.soundService.playSoundEffect('sounds/cantClick.mp3', ScreenTypeOx.Game);
@@ -236,7 +236,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
 
 
   public updateFocusPart2(toIndex: number) {
-    this.soundService.playSoundEffect('local-sounds/keypressOk.mp3', ScreenTypeOx.Game)
+    this.soundService.playSoundEffect('acrostic/local-sounds/keypressOk.mp3', ScreenTypeOx.Game)
     if (toIndex !== this.wordInputArray.length || this.completeWordText[toIndex].txt !== "") {
       const squareToFocus = this.wordInputArray.slice(toIndex + 1);
       const adjustVariable = squareToFocus.findIndex(z => z.nativeElement.value === '');
@@ -313,7 +313,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
     }
     else if (event.data === null) {
       stringArray[i].txt = '';
-      this.soundService.playSoundEffect('local-sounds/keypressOk.mp3', ScreenTypeOx.Game)
+      this.soundService.playSoundEffect('acrostic/local-sounds/keypressOk.mp3', ScreenTypeOx.Game)
     } else {
       event.stopPropagation();
       event.preventDefault();
