@@ -69,12 +69,13 @@ export class AppComponent extends BaseMicroLessonApp {
     const gameResources: string[] = ['background.svg', 'boat-with-water.svg', 'container-blue.svg', 'container-green.svg', 'container-orange.svg',
       'container-red.svg', 'header-background-18.svg', 'indicator.svg'];
 
-    const sounds = ['click.mp3', 'bubble01.mp3', 'bubble02.mp3', 'rightAnswer.mp3', 'woosh.mp3', 'wrongAnswer.mp3', 'clickSurrender.mp3', 'cantClick.mp3', 'keypressOk.mp3', 'selectedInput.mp3', 'hint.mp3'].map(z => 'sounds/' + z);
+    const sounds = ['click.mp3', 'bubble01.mp3', 'bubble02.mp3', 'rightAnswer.mp3', 'woosh.mp3', 'wrongAnswer.mp3', 'clickSurrender.mp3', 'cantClick.mp3',  'hint.mp3'].map(z => 'sounds/' + z);
     // 
+    const localSounds = ['keypressOk.mp3', 'selectedInput.mp3']
     return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/buttons/' + x, ResourceType.Svg,
       [ScreenTypeOx.Game], false)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/volcan/svg/' + x, ResourceType.Svg,
         [ScreenTypeOx.Game], false)))
-      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false));
+      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false)).concat(localSounds.map(x => new ResourceOx('local-sounds/' + x, ResourceType.Audio,[ScreenTypeOx.Game] ,true)));
   }
 }
 
