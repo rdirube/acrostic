@@ -72,9 +72,9 @@ export class AppComponent extends BaseMicroLessonApp {
     const sounds = ['click.mp3', 'bubble01.mp3', 'bubble02.mp3', 'rightAnswer.mp3', 'woosh.mp3', 'wrongAnswer.mp3', 'clickSurrender.mp3', 'cantClick.mp3', 'keypressOk.mp3', 'selectedInput.mp3', 'hint.mp3'].map(z => 'sounds/' + z);
     // 
     return svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/buttons/' + x, ResourceType.Svg,
-      [ScreenTypeOx.Game], true)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/volcan/svg/' + x, ResourceType.Svg,
-        [ScreenTypeOx.Game], true)))
-      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, true));
+      [ScreenTypeOx.Game], false)).concat(gameResources.map(x => new ResourceOx('mini-lessons/executive-functions/acrostic/volcan/svg/' + x, ResourceType.Svg,
+        [ScreenTypeOx.Game], false)))
+      .concat(getResourceArrayFromUrlList(sounds, ResourceType.Audio, false));
   }
 }
 
