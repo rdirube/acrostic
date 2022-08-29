@@ -353,17 +353,12 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
       targets: [this.wordOxTextArray.map(oxText => oxText.element.nativeElement)],
       delay: anime.stagger(150, { start: 300 }),
       backgroundColor: '#0FFF50',
-      keyframes
-    })
-    anime({
-      targets: [this.squareImage0.map(square => square.elementRef.nativeElement), this.squareImage2.map(square => square.elementRef.nativeElement)],
-      delay: anime.stagger(150, { start: 300 }),
-      keyframesSquare,
+      keyframes,
       complete: () => {
-      gameAction(); 
-      this.challengeService.animationRunning = false;
-      this.challengeService.nextWordSelection.emit(this.answerWord.id)
-      }
+        gameAction(); 
+        this.challengeService.animationRunning = false;
+        this.challengeService.nextWordSelection.emit(this.answerWord.id)
+        }
     })
   }
 
@@ -379,7 +374,7 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
   wrongAnswerAnimation() {
     this.challengeService.animationRunning = true;
     this.soundService.playSoundEffect('sounds/wrongAnswer.mp3', ScreenTypeOx.Game)
-    const rotate = Array.from(Array(8).keys()).map((z, i) => {
+    const rotate = Array.from(Array(10).keys()).map((z, i) => {
       return { value: isEven(i) ? 2 : -2, duration: 50 };
     }).concat([{ value: 0, duration: 50 }]);
     anime({
@@ -441,7 +436,6 @@ export class MainLetterComponent extends SubscriberOxDirective implements OnInit
         this.challengeService.animationRunning = false;
       }
     })
-
   }
 
 

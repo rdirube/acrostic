@@ -20,8 +20,9 @@ import { AcrosticNivelation } from '../types/types';
 
 export class AcrosticChallengeService extends ChallengeService<any, any> {
 
-  wordHasBeenSelected = new EventEmitter<WordAnswer>()
-  nextWordSelection = new EventEmitter<number>()
+  wordHasBeenSelected = new EventEmitter<WordAnswer>();
+  nextWordSelection = new EventEmitter<number>();
+  horizontalWordToArray = new EventEmitter();
 
   public exerciseConfig!: AcrosticNivelation;
   public animationRunning: boolean = false;

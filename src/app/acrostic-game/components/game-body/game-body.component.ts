@@ -13,7 +13,7 @@ import { anyElement, duplicateWithJSON, ExerciseData, MultipleChoiceSchemaData, 
 import { AcrosticAnswerService } from 'src/app/shared/services/acrostic-answer.service';
 import { AcrosticHintService } from 'src/app/shared/services/acrostic-hint.service';
 import { AcrosticExercise, HintInfo, HorizontalWord, WordAnswer, WordText } from 'src/app/shared/types/types';
-import { SubscriberOxDirective } from 'micro-lesson-components';
+import { FooterComponent, SubscriberOxDirective } from 'micro-lesson-components';
 import { MainLetterComponent } from '../main-letter/main-letter.component';
 import anime from 'animejs';
 import { filter, take, withLatestFrom } from 'rxjs/operators';
@@ -28,6 +28,8 @@ import { timer } from 'rxjs';
 export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
   @ViewChildren(MainLetterComponent) mainLetterComponent!: QueryList<MainLetterComponent>;
+  @ViewChild(FooterComponent) footer!: FooterComponent;
+
 
   public exerciseWord!: string;
   public exerciseWordArray!: string[];
@@ -41,7 +43,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   public countDownImageInfo: OxImageInfo | undefined;
   public exercise!: AcrosticExercise;
   public hintAvaible!: boolean;
-  public currentDescriptionAudio:string = "";
+  public currentDescriptionAudio:string = '';
   public hintInfo: HintInfo = {
     index: 0,
     isComplete: false
@@ -81,6 +83,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
       this.currentWordId = info.id + '';
       this.currentWordDefinition = info.description.text;
       this.currentDescriptionAudio = info.description.audio;
+      console.log(this.currentDescriptionAudio)
       this.hintService.usesPerChallenge = this.hintQuantity[info.id - 1].quantity + this.hintService.currentUses;
       this.hintService.checkHintAvailable();
     })
@@ -135,19 +138,23 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         })
         this.restoreDomElements();
         this.startGame();
-        this.mainLetterComponentArray = this.mainLetterComponent.toArray();
+      
       });
     this.addSubscription(this.gameActions.showHint, x => {
       this.showHint();
     })
-    // this.addSubscription(this.challengeService.nextWordSelection, id => {
-    //   if(id) {
-    //     this.mainLetterComponentArray[id].containerOn = true;
-    //     const inputToSelect = this.mainLetterComponentArray[id].firstHalfAnswer.concat(this.mainLetterComponentArray[id].secondHalfAnswer).findIndex((letter: { txt: string; }) => letter.txt === '');
-    //     this.mainLetterComponentArray[id].updateFocus(inputToSelect);
-    //   } 
-    // })
-    // this.addSubscription()
+    this.addSubscription(this.challengeService.nextWordSelection, id => {
+      if(id) {
+        this.mainLetterComponentArray[id].containerOn = true;
+        const inputToSelect = this.mainLetterComponentArray[id].firstHalfAnswer.concat(this.mainLetterComponentArray[id].secondHalfAnswer).findIndex((letter: { txt: string; }) => letter.txt === '');
+        this.mainLetterComponentArray[id].updateFocus(inputToSelect);
+        this.footer.forceNoNextButton = true;
+        this.footer.tryVisible = true;
+      } 
+    })
+    this.addSubscription(this.challengeService.horizontalWordToArray, x => {
+      this.mainLetterComponentArray = this.mainLetterComponent.toArray();
+    } )
   }
 
 
@@ -158,6 +165,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
 
   ngAfterViewInit(): void {
+   
   }
 
 
@@ -176,7 +184,10 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
           targets: ['.indicator-container', '.explanation-container'],
           delay: 250 * (this.exerciseWordArray.length + 1),
           duration: 1000,
-          translateY: ['-18vh', '0']
+          translateY: ['-18vh', '0'],
+          complete: () => {
+           this.challengeService.horizontalWordToArray.emit();
+          }
         })
       })
     });

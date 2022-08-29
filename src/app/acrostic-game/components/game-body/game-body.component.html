@@ -13,10 +13,10 @@
       <div fxLayoutAlign="center center" class="explanation-container" style="transform: translateY(-18vh);">
         <mlc-loaded-svg path="mini-lessons/executive-functions/acrostic/volcan/svg/header-background-18.svg"
           style="width: 89vh;"></mlc-loaded-svg>
-        <ox-text style="position: absolute;width:80vh; transform: translateX(-7vh);" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
+        <ox-text style="position: absolute;width:85%; transform: translateX(-4vh);" [originalText]="currentWordDefinition" fontSize="3vh" color="black"
           font="dinnRegular"></ox-text>
           <mlc-sound-button svgPath="mini-lessons/executive-functions/acrostic/buttons/sonido-activado.svg"
-          style="width: 9.5vh;transform: translateX(0.5vh);cursor: pointer;" (click)="playLoadedSound(currentDescriptionAudio)" [ngStyle]="{'opacity': currentDescriptionAudio !== '' ? 1 : 0}" >
+          style="width: 9.5vh;transform: translateX(0.5vh);cursor: pointer;" (click)="playLoadedSound(currentDescriptionAudio)" *ngIf="currentDescriptionAudio !== '' " >
           </mlc-sound-button>
       </div>
     </div>
@@ -31,7 +31,7 @@
         path="mini-lessons/executive-functions/acrostic/volcan/svg/background.svg">
       </mlc-loaded-svg>
       <div fxLayout="column" fxLayoutAlign="center center" [ngStyle]="{'transform': answerLargerThan6 ? 'translate(-4.5vh, 0.5vh)' : 'translateY(1.5vh)'}" class="myAbsolute">
-        <app-main-letter  #mainLetter style="transform: scale(0);"
+        <app-main-letter  #mainLetter style="transform: scale(0); cursor: pointer;"
         (componentInitEmit)="mainLetterCompToArray()"
          [componentInit]="componentsInit[i]"
          [currentId]="currentWordId"
@@ -43,7 +43,7 @@
       </div>
     </div>
     <div class="elements-container" fxLayoutAlign="center center" style="height: 10.5vh;">
-      <mlc-footer class="button-menu" style=" width: 97.5%; height: 12vh;" 
+      <mlc-footer #footer class="button-menu" style=" width: 97.5%; height: 12vh;" 
       trySvg="mini-lessons/executive-functions/acrostic/buttons/check.svg" 
       [forceNoNextButton]="true"
       surrenderSvg="mini-lessons/executive-functions/acrostic/buttons/surrender.svg" 
