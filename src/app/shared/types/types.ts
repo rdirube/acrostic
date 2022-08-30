@@ -53,6 +53,7 @@ export interface WordAnswer {
       }[]
     },
     advancedSettings: {
+      correctWithMayus:boolean,
       correctWithAccent:boolean,
       hintQuantity:number
     }
@@ -80,6 +81,7 @@ export interface WordAnswer {
       audio:string;
     },
     horizontalWord: HorizontalWord,
+    correctionWithMayus:boolean,
     correctionWithAccent:boolean,
     hintQuantity:number
   }

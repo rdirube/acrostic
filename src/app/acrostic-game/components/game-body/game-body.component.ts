@@ -5,7 +5,8 @@ import {
   GameActionsService,
   HintService,
   MicroLessonMetricsService,
-  SoundOxService
+  SoundOxService,
+  SurrenderService
 } from 'micro-lesson-core';
 import { AcrosticChallengeService } from 'src/app/shared/services/acrostic-challenge.service';
 import { ExerciseOx } from 'ox-core';
@@ -57,7 +58,8 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   public correctionWithAccent!: boolean;
   public answerLargerThan6!: boolean;
   public init: boolean = true;
-  
+  public correctionWithMayus!:boolean;
+
   constructor(private challengeService: AcrosticChallengeService,
     private metricsService: MicroLessonMetricsService<any>,
     private gameActions: GameActionsService<any>,
@@ -66,6 +68,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     private endService: EndGameService,
     private feedbackService: FeedbackOxService,
     private answerService: AcrosticAnswerService,
+    private surrenderService: SurrenderService
   ) {
     super()
     this.feedbackService.playFeedBackSounds = false;
@@ -116,6 +119,8 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
         }
         );
         this.correctionWithAccent = exercise.exerciseData.correctionWithAccent;
+        this.correctionWithMayus = exercise.exerciseData.correctionWithMayus;
+        console.log(exercise.exerciseData);
         this.currentWordId = 1 + '';
         this.currentWordDefinition = this.horizontalWords[0].description.text;
         this.answerLargerThan6 = this.exerciseWordArray.length > 6 ? true : false;

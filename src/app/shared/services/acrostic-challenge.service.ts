@@ -29,7 +29,6 @@ export class AcrosticChallengeService extends ChallengeService<any, any> {
 
   protected generateNextChallenge(subLevel: number): ExerciseOx<AcrosticExercise> {
     const horizontalWordText:HorizontalWordText[] = [];
-    console.log()
     this.exerciseConfig.horizontalWord.word.forEach(word => {
     horizontalWordText.push({
         text: word.word1 + word.mainLetter + word.word2,
@@ -43,6 +42,7 @@ export class AcrosticChallengeService extends ChallengeService<any, any> {
           word: horizontalWordText,
           description: this.exerciseConfig.horizontalWord.description
         },
+        correctionWithMayus:this.exerciseConfig.advancedSettings.correctWithMayus,
        correctionWithAccent:this.exerciseConfig.advancedSettings.correctWithAccent,
        hintQuantity: this.exerciseConfig.advancedSettings.hintQuantity
       } as AcrosticExercise, 1, {
@@ -50,7 +50,6 @@ export class AcrosticChallengeService extends ChallengeService<any, any> {
       freeTime: 0
     }, []);
 
-    throw new Error('Method not implemented.');
   }
 
 
@@ -74,8 +73,9 @@ export class AcrosticChallengeService extends ChallengeService<any, any> {
    }
 
 
-  constructor(gameActionsService: GameActionsService<any>, private levelService: LevelService,
+  constructor( private levelService: LevelService,
     subLevelService: SubLevelService,
+    gameActionsService: GameActionsService<any>,
     private preloaderService: PreloaderOxService,
     private feedback: FeedbackOxService,
     private appInfo: AppInfoOxService) {

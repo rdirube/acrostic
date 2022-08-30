@@ -9,7 +9,7 @@ import { AcrosticChallengeService } from './acrostic-challenge.service';
 })
 export class AcrosticAnswerService extends AnswerService {
   protected isValidAnswer(answer: UserAnswer): boolean {
-    return this.currentAnswer.parts.every(part => part.parts.every(part => part.value !== ''))
+    return (this.currentAnswer.parts as any).every((part: { parts: any[]; }) => part.parts.every(part => part.value !== ''))
   }
 
 
@@ -31,7 +31,7 @@ export class AcrosticAnswerService extends AnswerService {
      }
 
      public cleanAnswer(): void {
-      this.currentAnswer = { parts: [] };
+      (this.currentAnswer as any) = { parts: [] };
     }
 
 
